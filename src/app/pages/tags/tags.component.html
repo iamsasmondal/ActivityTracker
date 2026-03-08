@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Tags</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-card style="margin-top: 20px;">
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-input [(ngModel)]="newTagName" placeholder="New Tag Name"></ion-input>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-select [(ngModel)]="selectedCategoryId" placeholder="Category (Optional)" interface="popover"
+          style="width:100%">
+          <ion-select-option [value]="null">Common (All Categories)</ion-select-option>
+          @for (c of store.categories(); track c.id) {
+          <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+      <div class="ion-padding-top ion-text-right">
+        <ion-button (click)="addTag()" [disabled]="!newTagName.trim()">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Create Tag
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  @if (store.tags().length === 0) {
+  <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #666;">
+    <ion-icon name="pricetag-outline" style="font-size: 64px; color: #ccc; margin-bottom: 16px;"></ion-icon>
+    <h3>No Tags Found</h3>
+    <p>Create some tags to classify your activities.</p>
+  </div>
+  }
+
+  <ion-list inset="true">
+    @for (t of store.tags(); track t.id) {
+    <ion-item>
+      <ion-icon name="pricetag-outline" slot="start" color="tertiary"></ion-icon>
+      <ion-label>
+        <h2>{{ t.name }}</h2>
+        <p>Assigned to: <ion-badge color="medium">{{ getCategoryName(t.category_id) }}</ion-badge></p>
+      </ion-label>
+    </ion-item>
+    }
+  </ion-list>
+</ion-content>

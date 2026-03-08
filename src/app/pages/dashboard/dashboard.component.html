@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Activity Feed</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        Export CSV
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+
+  <div class="header-filters ion-padding" style="background: #fff; margin-bottom: 10px; border-bottom: 1px solid #eee;">
+    <ion-grid>
+      <ion-row class="ion-align-items-center">
+        <!-- Date Segment -->
+        <ion-col size="12" size-md="4">
+          <ion-select [(ngModel)]="dateRangeMode" (ionChange)="setDateRangePreset(dateRangeMode)" interface="popover"
+            placeholder="Date Range">
+            <ion-select-option value="day">Today</ion-select-option>
+            <ion-select-option value="week">This Week</ion-select-option>
+            <ion-select-option value="thisMonth">This Month</ion-select-option>
+            <ion-select-option value="year">This Year</ion-select-option>
+            <ion-select-option value="custom">Custom</ion-select-option>
+          </ion-select>
+        </ion-col>
+
+        <!-- Search -->
+        <ion-col size="12" size-md="4">
+          <ion-searchbar [ngModel]="store.searchQuery()" (ngModelChange)="store.setSearchQuery($event)"
+            placeholder="Search Name or Description"></ion-searchbar>
+        </ion-col>
+
+        <!-- Chips Filter -->
+        <ion-col size="12" size-md="4">
+          <ion-select placeholder="Filter Categories" [multiple]="true" [ngModel]="store.selectedCategories()"
+            (ngModelChange)="store.selectedCategories.set($event)">
+            @for (c of store.categories(); track c.id) {
+            <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  @if (store.filteredActivities().length === 0) {
+  <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #666;">
+    <ion-icon name="document-text-outline" style="font-size: 64px; color: #ccc; margin-bottom: 16px;"></ion-icon>
+    <h3>No Activities Found</h3>
+    <p>Try adjusting your filters or start tracking your activities.</p>
+  </div>
+  }
+
+  <ion-list inset="true">
+    @for (act of store.filteredActivities(); track act.id) {
+    <ion-item>
+      <ion-avatar slot="start"
+        style="background:#00a887; display:flex; align-items:center; justify-content:center; color:#fff">
+        <ion-icon [name]="act.image_id ? 'image-outline' : 'pricetag-outline'" style="font-size:24px"></ion-icon>
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ act.name }}</h2>
+        <p>{{ act.description }}</p>
+        <div style="margin-top: 5px;">
+          <ion-badge color="medium">{{ act.date }}</ion-badge>
+          <ion-chip color="primary" *ngIf="act.category_id">{{ getCategoryName(act.category_id) }}</ion-chip>
+          <ion-chip color="tertiary" *ngIf="act.tag_id">{{ getTagName(act.tag_id) }}</ion-chip>
+        </div>
+      </ion-label>
+    </ion-item>
+    }
+  </ion-list>
+
+  <!-- Add FAB Button -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openCreateModal()">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

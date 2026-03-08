@@ -1,0 +1,40 @@
+<ion-content color="light" class="ion-padding auth-page">
+  <div class="auth-container">
+    <div class="logo-container" style="text-align: center; margin-bottom: 2rem; margin-top: 2rem;">
+      <ion-icon name="person-add-outline" style="font-size: 64px; color: var(--ion-color-secondary)"></ion-icon>
+      <h1 style="color: var(--ion-color-primary); font-weight: bold;">Join Tracker</h1>
+      <p style="color: var(--ion-color-medium)">Create your account below</p>
+    </div>
+
+    <ion-card class="auth-card" style="max-width: 400px; margin: 0 auto; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+      <ion-card-content>
+        <div *ngIf="errorMessage" class="error-banner"
+          style="color: var(--ion-color-danger); text-align: center; margin-bottom: 1rem;">
+          {{ errorMessage }}
+        </div>
+
+        <ion-item lines="full" class="ion-margin-bottom">
+          <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
+          <ion-input type="email" placeholder="Email Address" [(ngModel)]="email"></ion-input>
+        </ion-item>
+
+        <ion-item lines="full" class="ion-margin-bottom">
+          <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+          <ion-input type="password" placeholder="Create Password" [(ngModel)]="password"></ion-input>
+        </ion-item>
+
+        <ion-button expand="block" color="secondary" (click)="signup()" [disabled]="isLoading" class="ion-margin-top"
+          style="--border-radius: 8px;">
+          {{ isLoading ? 'Creating account...' : 'Sign Up' }}
+        </ion-button>
+
+        <div class="ion-text-center ion-margin-top">
+          <ion-text color="medium">
+            <p>Already have an account? <a routerLink="/login"
+                style="color: var(--ion-color-secondary); font-weight: 500;">Log in</a></p>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

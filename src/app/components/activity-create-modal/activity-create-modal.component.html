@@ -1,0 +1,77 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-title>Log Activity</ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="dismiss()">
+                <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+    <form [formGroup]="activityForm" (ngSubmit)="saveActivity()" class="ion-padding">
+        <ion-list inset="true">
+
+            <ion-item>
+                <ion-input label="Name" labelPlacement="stacked" formControlName="name"
+                    placeholder="e.g. Morning Run"></ion-input>
+            </ion-item>
+
+            <ion-item>
+                <ion-textarea label="Description" labelPlacement="stacked" formControlName="description"
+                    placeholder="Notes..."></ion-textarea>
+            </ion-item>
+
+            <ion-item>
+                <ion-label>Date</ion-label>
+                <ion-datetime-button datetime="datetime"></ion-datetime-button>
+                <ion-modal [keepContentsMounted]="true">
+                    <ng-template>
+                        <!-- max attribute ensures past dates only -->
+                        <ion-datetime id="datetime" formControlName="date" presentation="date"
+                            [max]="todayDate"></ion-datetime>
+                    </ng-template>
+                </ion-modal>
+            </ion-item>
+
+            <ion-item>
+                <ion-select label="Category" labelPlacement="stacked" formControlName="category_id" interface="popover">
+                    @for (c of store.categories(); track c.id) {
+                    <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+                    }
+                </ion-select>
+            </ion-item>
+
+            <ion-item *ngIf="availableTags.length > 0">
+                <ion-select label="Tag (Optional)" labelPlacement="stacked" formControlName="tag_id"
+                    interface="popover">
+                    <ion-select-option value="">None</ion-select-option>
+                    @for (t of availableTags; track t.id) {
+                    <ion-select-option [value]="t.id">{{ t.name }}</ion-select-option>
+                    }
+                </ion-select>
+            </ion-item>
+
+            <!-- ImageKit Upload -->
+            <ion-item lines="none" class="ion-margin-top">
+                <ion-button fill="outline" expand="block" style="width: 100%" (click)="takePhoto()">
+                    <ion-icon slot="start" name="camera-outline"></ion-icon>
+                    {{ photoBase64 ? 'Retake Photo' : 'Attach Photo' }}
+                </ion-button>
+            </ion-item>
+
+            <div *ngIf="photoBase64" style="text-align: center; margin-top: 10px;">
+                <img [src]="'data:image/jpeg;base64,' + photoBase64" style="max-height: 150px; border-radius: 8px;">
+            </div>
+
+        </ion-list>
+
+        <div class="ion-margin-top">
+            <ion-button expand="block" type="submit" [disabled]="activityForm.invalid || isUploading">
+                <ion-icon slot="start" name="checkmark-outline" *ngIf="!isUploading"></ion-icon>
+                {{ isUploading ? 'Saving...' : 'Save Activity' }}
+            </ion-button>
+        </div>
+    </form>
+</ion-content>

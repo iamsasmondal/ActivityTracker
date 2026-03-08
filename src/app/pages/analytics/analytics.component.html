@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Analytics Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <div class="header-filters ion-padding" style="background:#fff;">
+    <ion-grid>
+      <ion-row class="ion-justify-content-center">
+        <ion-col size="12" size-md="6">
+          <ion-select [(ngModel)]="selectedCategoryId" placeholder="Select Category for Breakdown" interface="popover"
+            style="width: 100%">
+            @for (c of store.categories(); track c.id) {
+            <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  @if (selectedCategoryId) {
+  <div class="chart-container" style="position:relative; height:40vh; margin-top:20px; padding: 20px;">
+    <h4 style="text-align:center; color: #333;">{{ getCategoryName() }} Category Breakdown</h4>
+    <canvas #pieCanvas></canvas>
+  </div>
+  } @else {
+  <div style="text-align:center; padding-top: 50px; color:#999;">
+    <ion-icon name="pie-chart-outline" style="font-size: 64px; opacity: 0.5"></ion-icon>
+    <h3>Please select a category to view analytics.</h3>
+  </div>
+  }
+
+  @if (selectedCategoryId && chartData().stats.length) {
+  <ion-list style="margin-top:20px;" inset="true">
+    <ion-item *ngFor="let s of chartData().stats">
+      <ion-label>
+        <h2>{{ s.name }}</h2>
+      </ion-label>
+      <span slot="end" style="font-weight: bold; color: var(--ion-color-primary)">{{ s.perc }}%</span>
+    </ion-item>
+  </ion-list>
+  }
+</ion-content>

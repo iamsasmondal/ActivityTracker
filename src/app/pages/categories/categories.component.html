@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Categories</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-card style="margin-top: 20px;">
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-input [(ngModel)]="newCategoryName" placeholder="New Category Name"></ion-input>
+        <ion-button slot="end" (click)="addCategory()" [disabled]="!newCategoryName.trim()">
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Add
+        </ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  @if (store.categories().length === 0) {
+  <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #666;">
+    <ion-icon name="folder-outline" style="font-size: 64px; color: #ccc; margin-bottom: 16px;"></ion-icon>
+    <h3>No Categories Yet</h3>
+    <p>Create a category above to start organizing your activities.</p>
+  </div>
+  }
+
+  <ion-list inset="true">
+    @for (c of store.categories(); track c.id) {
+    <ion-item>
+      <ion-icon name="folder-outline" slot="start" color="primary"></ion-icon>
+      <ion-label>
+        <h2>{{ c.name }}</h2>
+      </ion-label>
+    </ion-item>
+    }
+  </ion-list>
+</ion-content>
