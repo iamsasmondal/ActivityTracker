@@ -1,0 +1,7 @@
+{
+  "name": "activity-tracker",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
