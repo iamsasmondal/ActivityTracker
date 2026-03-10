@@ -198,6 +198,12 @@ ion-alert {
     }
 }
 
+/* Habit edit alert - wider dialog */
+.habit-edit-alert {
+    --width: 90%;
+    --max-width: 500px;
+}
+
 /* Popover overrides (used by Date Range select) */
 ion-popover {
     --background: #1e293b;

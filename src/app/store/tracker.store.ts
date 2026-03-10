@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { Profile, Category, Tag, Activity } from '../models/schema.models';
+import { Profile, Category, Tag, Activity, Habit } from '../models/schema.models';
 import { SupabaseService } from '../services/supabase.service';
 
 @Injectable({
@@ -11,6 +11,9 @@ export class TrackerStore {
     public categories = signal<Category[]>([]);
     public tags = signal<Tag[]>([]);
     public activities = signal<Activity[]>([]);
+    public habits = signal<Habit[]>([]);
+
+    private _dataLoaded = false;
 
     // Filter signals
     // Date range picker values (start, end)
@@ -74,9 +77,12 @@ export class TrackerStore {
     // --- Actions/Operations ---
 
     async loadInitialData() {
-        // In a real app, retrieve user data here from Supabase
+        if (this._dataLoaded) return;  // Prevent re-fetching on every navigation
+
         const { data: { user } } = await this.supabase.client.auth.getUser();
-        if (!user) return; // Note in a real app, handle unauthenticated differently
+        if (!user) return;
+
+        this._dataLoaded = true;
 
         // Load categories
         const { data: cats } = await this.supabase.client
@@ -99,6 +105,22 @@ export class TrackerStore {
             .eq('user_id', user.id)
             .order('date', { ascending: false });
         if (acts) this.activities.set(acts);
+
+        // Load habits (wrapped in try-catch — table may not exist yet if SQL hasn't been run)
+        try {
+            const { data: habs, error: habsError } = await this.supabase.client
+                .from('habits')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+            if (habsError) {
+                console.warn('Habits table not available yet:', habsError.message);
+            } else if (habs) {
+                this.habits.set(habs);
+            }
+        } catch (e) {
+            console.warn('Failed to load habits:', e);
+        }
     }
 
     async addCategory(name: string): Promise<{ success: boolean; error?: string }> {
@@ -174,6 +196,19 @@ export class TrackerStore {
         }
         return { success: false, error: error?.message || 'Failed to update tag' };
     }
+
+    async deleteTag(id: string): Promise<{ success: boolean; error?: string }> {
+        const { error } = await this.supabase.client
+            .from('tags')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            this.tags.update(t => t.filter(tag => tag.id !== id));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to delete tag' };
+    }
     async addActivity(payload: Omit<Activity, 'id' | 'user_id' | 'created_at'>) {
         const { data: { user } } = await this.supabase.client.auth.getUser();
         if (!user) return;
@@ -187,6 +222,79 @@ export class TrackerStore {
         if (data && !error) {
             this.activities.update(a => [data, ...a]);
         }
+    }
+
+    async updateActivity(id: string, payload: Partial<Activity>) {
+        const { data, error } = await this.supabase.client
+            .from('activities')
+            .update(payload)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.activities.update(acts => acts.map(a => a.id === id ? data : a));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to update activity' };
+    }
+
+    async deleteActivity(id: string) {
+        const { error } = await this.supabase.client
+            .from('activities')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            this.activities.update(acts => acts.filter(a => a.id !== id));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to delete activity' };
+    }
+
+    async addHabit(title: string, description: string = ''): Promise<{ success: boolean; error?: string }> {
+        const { data: { user } } = await this.supabase.client.auth.getUser();
+        if (!user) return { success: false, error: 'Not authenticated' };
+
+        const { data, error } = await this.supabase.client
+            .from('habits')
+            .insert({ user_id: user.id, title, description })
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.habits.update(h => [data, ...h]);
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to add habit' };
+    }
+
+    async updateHabit(id: string, title: string, description: string = ''): Promise<{ success: boolean; error?: string }> {
+        const { data, error } = await this.supabase.client
+            .from('habits')
+            .update({ title, description })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.habits.update(h => h.map(hab => hab.id === id ? data : hab));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to update habit' };
+    }
+
+    async deleteHabit(id: string): Promise<{ success: boolean; error?: string }> {
+        const { error } = await this.supabase.client
+            .from('habits')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            this.habits.update(h => h.filter(hab => hab.id !== id));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to delete habit' };
     }
 
     // Set Filters

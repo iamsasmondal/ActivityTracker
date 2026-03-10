@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { Activity } from '../../models/schema.models';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
@@ -6,10 +7,10 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
   IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonSearchbar, IonSelect, IonSelectOption, IonButton, IonIcon, IonItem, IonLabel,
-  IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime, IonFab, IonFabButton, ModalController, IonPopover, IonCheckbox
+  IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime, IonFab, IonFabButton, ModalController, IonPopover, IonCheckbox, AlertController, IonItemSliding, IonItemOptions, IonItemOption
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline } from 'ionicons/icons';
+import { downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline, pencilOutline, trashOutline } from 'ionicons/icons';
 import { TrackerStore } from '../../store/tracker.store';
 import { ActivityCreateModalComponent } from '../../components/activity-create-modal/activity-create-modal.component';
 
@@ -24,12 +25,13 @@ import { ActivityCreateModalComponent } from '../../components/activity-create-m
     IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonSearchbar, IonSelect, IonSelectOption, IonButton, IonIcon, IonItem, IonLabel,
     IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime,
-    IonFab, IonFabButton, IonPopover, IonCheckbox
+    IonFab, IonFabButton, IonPopover, IonCheckbox, IonItemSliding, IonItemOptions, IonItemOption
   ]
 })
 export class DashboardComponent {
   store = inject(TrackerStore);
   modalCtrl = inject(ModalController);
+  alertCtrl = inject(AlertController);
 
   dateRangeMode = 'thisMonth';
   customStartDate = new Date().toISOString().split('T')[0];
@@ -37,13 +39,20 @@ export class DashboardComponent {
 
 
   constructor() {
-    addIcons({ downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline });
+    addIcons({ downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline, pencilOutline, trashOutline });
     this.setDateRangePreset('thisMonth');
   }
 
-  async openCreateModal() {
+  async openCreateModal(activity?: Activity) {
+    const componentProps: any = {};
+    if (activity) {
+      componentProps.activityId = activity.id;
+      componentProps.existingData = activity;
+    }
+
     const modal = await this.modalCtrl.create({
       component: ActivityCreateModalComponent,
+      componentProps,
       breakpoints: [0, 0.5, 0.8, 1],
       initialBreakpoint: 0.8
     });
@@ -130,5 +139,23 @@ export class DashboardComponent {
   getTagName(id: string | undefined) {
     if (!id) return '';
     return this.store.tags().find(t => t.id === id)?.name || 'Common';
+  }
+
+  async deleteActivity(id: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Activity',
+      message: 'Are you sure you want to delete this activity? This action cannot be undone.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: () => {
+            this.store.deleteActivity(id);
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 }

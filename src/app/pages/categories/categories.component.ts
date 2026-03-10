@@ -5,10 +5,10 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonInput, IonCard, IonCardContent,
   IonSpinner, IonItemSliding, IonItemOptions, IonItemOption,
-  AlertController, ToastController
+  AlertController, ToastController, IonNote
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, folderOutline, trashOutline, pencilOutline } from 'ionicons/icons';
+import { addOutline, folderOutline, trashOutline, pencilOutline, informationCircleOutline } from 'ionicons/icons';
 import { TrackerStore } from '../../store/tracker.store';
 
 @Component({
@@ -20,7 +20,7 @@ import { TrackerStore } from '../../store/tracker.store';
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
     IonList, IonItem, IonLabel, IonButton, IonIcon, IonInput, IonCard, IonCardContent,
-    IonSpinner, IonItemSliding, IonItemOptions, IonItemOption
+    IonSpinner, IonItemSliding, IonItemOptions, IonItemOption, IonNote
   ]
 })
 export class CategoriesComponent {
@@ -31,11 +31,13 @@ export class CategoriesComponent {
   isAdding = signal(false);
 
   constructor() {
-    addIcons({ addOutline, folderOutline, trashOutline, pencilOutline });
+    addIcons({ addOutline, folderOutline, trashOutline, pencilOutline, informationCircleOutline });
   }
 
-  hasActivities(categoryId: string): boolean {
-    return this.store.activities().some(a => a.category_id === categoryId);
+  isInUse(categoryId: string): boolean {
+    const hasActivities = this.store.activities().some(a => a.category_id === categoryId);
+    const hasTags = this.store.tags().some(t => t.category_id === categoryId);
+    return hasActivities || hasTags;
   }
 
   async addCategory() {

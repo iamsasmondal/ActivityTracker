@@ -1,0 +1,74 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Habits</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+    <ion-card style="margin-top: 20px;">
+        <ion-card-content>
+            <ion-item lines="none">
+                <ion-input [(ngModel)]="newHabitTitle" placeholder="Habit Title (e.g. Drink Water)"
+                    [disabled]="isAdding()"></ion-input>
+            </ion-item>
+            <ion-item lines="none" class="ion-margin-top">
+                <ion-textarea [(ngModel)]="newHabitDescription" placeholder="Description (Optional)"
+                    [disabled]="isAdding()" autoGrow="true" minHeight="60"></ion-textarea>
+            </ion-item>
+            <div class="ion-text-right ion-margin-top">
+                <ion-button (click)="addHabit()" [disabled]="!newHabitTitle.trim() || isAdding()">
+                    @if (isAdding()) {
+                    <ion-spinner name="crescent" style="margin-right: 8px;"></ion-spinner>
+                    Adding...
+                    } @else {
+                    <ion-icon slot="start" name="add-outline"></ion-icon>
+                    Create Habit
+                    }
+                </ion-button>
+            </div>
+        </ion-card-content>
+    </ion-card>
+
+    @if (store.habits().length === 0) {
+    <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #64748b;">
+        <ion-icon name="refresh-outline" style="font-size: 64px; color: #334155; margin-bottom: 16px;"></ion-icon>
+        <h3 style="color: #94a3b8;">No Habits Yet</h3>
+        <p>Create a habit above to start tracking it.</p>
+    </div>
+    }
+
+    <ion-list inset="true">
+        @for (h of store.habits(); track h.id) {
+        <ion-item-sliding>
+            <ion-item>
+                <ion-icon name="refresh-outline" slot="start" color="tertiary"></ion-icon>
+                <ion-label>
+                    <h2>{{ h.title }}</h2>
+                    @if(h.description) {
+                    <p>{{ h.description }}</p>
+                    }
+                </ion-label>
+                <ion-button slot="end" fill="clear" color="medium" (click)="editHabit(h.id, h.title, h.description)">
+                    <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+                </ion-button>
+                <ion-button slot="end" fill="clear" color="danger" (click)="deleteHabit(h.id)">
+                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+            </ion-item>
+            <ion-item-options side="end">
+                <ion-item-option color="medium" (click)="editHabit(h.id, h.title, h.description)">
+                    <ion-icon slot="start" name="pencil-outline"></ion-icon>
+                    Edit
+                </ion-item-option>
+                <ion-item-option color="danger" (click)="deleteHabit(h.id)">
+                    <ion-icon slot="start" name="trash-outline"></ion-icon>
+                    Delete
+                </ion-item-option>
+            </ion-item-options>
+        </ion-item-sliding>
+        }
+    </ion-list>
+</ion-content>

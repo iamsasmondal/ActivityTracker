@@ -1,6 +1,6 @@
 <ion-header>
     <ion-toolbar color="primary">
-        <ion-title>Log Activity</ion-title>
+        <ion-title>{{ activityId ? 'Edit Activity' : 'Log Activity' }}</ion-title>
         <ion-buttons slot="end">
             <ion-button (click)="dismiss()">
                 <ion-icon slot="icon-only" name="close-outline"></ion-icon>
@@ -64,7 +64,7 @@
         <div class="ion-margin-top">
             <ion-button expand="block" type="submit" [disabled]="activityForm.invalid || isUploading">
                 <ion-icon slot="start" name="checkmark-outline" *ngIf="!isUploading"></ion-icon>
-                {{ isUploading ? 'Saving...' : 'Save Activity' }}
+                {{ isUploading ? 'Saving...' : (activityId ? 'Update Activity' : 'Save Activity') }}
             </ion-button>
         </div>
     </form>

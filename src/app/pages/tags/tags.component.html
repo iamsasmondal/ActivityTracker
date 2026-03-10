@@ -39,18 +39,45 @@
   </div>
   }
 
+  <div class="ion-padding-horizontal" style="margin-top: 16px;">
+    <ion-note color="medium" style="display: block; font-size: 0.85rem; text-align: center;">
+      <ion-icon name="information-circle-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
+      Tags can only be deleted if they have no activities assigned to them.
+    </ion-note>
+  </div>
+
   <ion-list inset="true">
     @for (t of store.tags(); track t.id) {
-    <ion-item>
-      <ion-icon name="pricetag-outline" slot="start" color="tertiary"></ion-icon>
-      <ion-label>
-        <h2>{{ t.name }}</h2>
-        <p>Assigned to: <ion-badge color="medium">{{ getCategoryName(t.category_id) }}</ion-badge></p>
-      </ion-label>
-      <ion-button slot="end" fill="clear" color="medium" (click)="openEditModal(t)">
-        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
-      </ion-button>
-    </ion-item>
+    <ion-item-sliding>
+      <ion-item>
+        <ion-icon name="pricetag-outline" slot="start" color="tertiary"></ion-icon>
+        <ion-label>
+          <h2>{{ t.name }}</h2>
+          <p>Assigned to: <ion-badge color="medium">{{ getCategoryName(t.category_id) }}</ion-badge></p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" color="medium" (click)="openEditModal(t)">
+          <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+        </ion-button>
+        @if (!hasActivities(t.id)) {
+        <ion-button slot="end" fill="clear" color="danger" (click)="deleteTag(t.id)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+        }
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="medium" (click)="openEditModal(t)">
+          <ion-icon slot="start" name="pencil-outline"></ion-icon>
+          Edit
+        </ion-item-option>
+        @if (!hasActivities(t.id)) {
+        <ion-item-option color="danger" (click)="deleteTag(t.id)">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Delete
+        </ion-item-option>
+        }
+      </ion-item-options>
+    </ion-item-sliding>
     }
   </ion-list>
 

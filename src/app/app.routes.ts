@@ -35,6 +35,10 @@ export const routes: Routes = [
       {
         path: 'tags',
         loadComponent: () => import('./pages/tags/tags.component').then(m => m.TagsComponent)
+      },
+      {
+        path: 'habits',
+        loadComponent: () => import('./pages/habits/habits.component').then(m => m.HabitsComponent)
       }
     ]
   },

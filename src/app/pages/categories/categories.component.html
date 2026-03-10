@@ -33,6 +33,13 @@
   </div>
   }
 
+  <div class="ion-padding-horizontal" style="margin-top: 16px;">
+    <ion-note color="medium" style="display: block; font-size: 0.85rem; text-align: center;">
+      <ion-icon name="information-circle-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
+      Categories can only be deleted if they have no activities and no tags assigned to them.
+    </ion-note>
+  </div>
+
   <ion-list inset="true">
     @for (c of store.categories(); track c.id) {
     <ion-item-sliding>
@@ -44,7 +51,7 @@
         <ion-button slot="end" fill="clear" color="medium" (click)="editCategory(c.id, c.name)">
           <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
         </ion-button>
-        @if (!hasActivities(c.id)) {
+        @if (!isInUse(c.id)) {
         <ion-button slot="end" fill="clear" color="danger" (click)="deleteCategory(c.id)">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>
@@ -55,7 +62,7 @@
           <ion-icon slot="start" name="pencil-outline"></ion-icon>
           Edit
         </ion-item-option>
-        @if (!hasActivities(c.id)) {
+        @if (!isInUse(c.id)) {
         <ion-item-option color="danger" (click)="deleteCategory(c.id)">
           <ion-icon slot="start" name="trash-outline"></ion-icon>
           Delete

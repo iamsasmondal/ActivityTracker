@@ -33,3 +33,11 @@ export interface Activity {
   image_id?: string;
   created_at?: string;
 }
+
+export interface Habit {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  created_at?: string;
+}

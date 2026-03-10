@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
@@ -29,6 +29,9 @@ export class ActivityCreateModalComponent implements OnInit {
     modalCtrl = inject(ModalController);
     fb = inject(FormBuilder);
 
+    @Input() activityId?: string;
+    @Input() existingData?: any;
+
     activityForm!: FormGroup;
     todayDate: string;
 
@@ -41,12 +44,18 @@ export class ActivityCreateModalComponent implements OnInit {
     }
 
     ngOnInit() {
+        // If editing, use the existing date (strip time if needed) or today
+        let initialDate = this.todayDate;
+        if (this.existingData?.date) {
+            initialDate = this.existingData.date;
+        }
+
         this.activityForm = this.fb.group({
-            name: ['', Validators.required],
-            description: [''],
-            date: [this.todayDate, Validators.required],
-            category_id: ['', Validators.required],
-            tag_id: ['']
+            name: [this.existingData?.name || '', Validators.required],
+            description: [this.existingData?.description || ''],
+            date: [initialDate, Validators.required],
+            category_id: [this.existingData?.category_id || '', Validators.required],
+            tag_id: [this.existingData?.tag_id || '']
         });
 
         // Reset tag if category changes and tag is no longer valid
@@ -105,11 +114,15 @@ export class ActivityCreateModalComponent implements OnInit {
             description: rawForm.description,
             date: dateOnly,
             category_id: rawForm.category_id,
-            tag_id: rawForm.tag_id || undefined,
-            image_id
+            tag_id: rawForm.tag_id || null, // null removes the tag completely if unset
+            ...(image_id !== undefined && { image_id }) // only include if new image was uploaded
         };
 
-        await this.store.addActivity(payload);
+        if (this.activityId) {
+            await this.store.updateActivity(this.activityId, payload);
+        } else {
+            await this.store.addActivity(payload);
+        }
 
         this.isUploading = false;
         this.modalCtrl.dismiss({ saved: true });
