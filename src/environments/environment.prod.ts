@@ -1,12 +1,12 @@
 export const environment = {
   production: true,
   supabase: {
-    url: 'YOUR_SUPABASE_URL',
-    key: 'YOUR_SUPABASE_ANON_KEY',
+    url: 'https://toobkgnidgasiqmmawop.supabase.co',
+    key: 'sb_publishable_EfNNGpkMiq81QumGrLyvGg_y-fnUNg2',
   },
   imagekit: {
-    urlEndpoint: 'https://ik.imagekit.io/YOUR_IMAGEKIT_ID',
-    publicKey: 'YOUR_IMAGEKIT_PUBLIC_KEY',
-    authenticationEndpoint: 'http://localhost:3000/auth'
+    urlEndpoint: 'https://ik.imagekit.io/image007',
+    publicKey: 'public_FLxtvCIEzY6xfnmGSpvt2FI5jPk=',
+    authenticationEndpoint: 'https://activitytracker.online/auth'
   }
 };
