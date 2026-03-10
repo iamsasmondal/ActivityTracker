@@ -199,9 +199,9 @@ ion-alert {
 }
 
 /* Habit edit alert - wider dialog */
-.habit-edit-alert {
-    --width: 90%;
-    --max-width: 500px;
+ion-alert.habit-edit-alert {
+    --width: 95vw !important;
+    --max-width: 600px !important;
 }
 
 /* Popover overrides (used by Date Range select) */

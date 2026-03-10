@@ -192,15 +192,17 @@
       <ion-item>
         <ion-avatar slot="start"
           style="background:#4fd1c5; display:flex; align-items:center; justify-content:center; color:#0f172a">
-          <ion-icon [name]="act.image_id ? 'image-outline' : 'pricetag-outline'" style="font-size:24px"></ion-icon>
+          <ion-icon [name]="act.image_id ? 'image-outline' : 'grid-outline'" style="font-size:24px"></ion-icon>
         </ion-avatar>
         <ion-label>
           <h2>{{ act.name }}</h2>
           <p>{{ act.description }}</p>
-          <div style="margin-top: 5px;">
-            <ion-badge color="medium">{{ act.date }}</ion-badge>
-            <ion-chip color="tertiary" *ngIf="act.tag_id">{{ getTagName(act.tag_id) }}</ion-chip>
-            <ion-chip color="primary" *ngIf="act.category_id">{{ getCategoryName(act.category_id) }}</ion-chip>
+          <div style="margin-top: 5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <ion-badge color="medium" style="margin: 0;">{{ act.date }}</ion-badge>
+            <ion-chip color="primary" *ngIf="act.category_id" style="margin: 0; min-height: 24px;">{{
+              getCategoryName(act.category_id) }}</ion-chip>
+            <ion-chip color="tertiary" *ngIf="act.tag_id" style="margin: 0; min-height: 24px;">{{ getTagName(act.tag_id)
+              }}</ion-chip>
           </div>
         </ion-label>
 

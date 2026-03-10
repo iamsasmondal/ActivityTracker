@@ -45,6 +45,9 @@ export class AnalyticsComponent {
   @ViewChild('pieCanvas') pieCanvas!: ElementRef<HTMLCanvasElement>;
   chart: Chart | null = null;
 
+  @ViewChild('categoryCanvas') categoryCanvas!: ElementRef<HTMLCanvasElement>;
+  categoryChart: Chart | null = null;
+
   /** Computed breakdown: counts per tag + "No Tag" for the selected category */
   breakdown = computed(() => {
     const catId = this.selectedCategoryId();
@@ -96,6 +99,48 @@ export class AnalyticsComponent {
     return { slices, total };
   });
 
+  /** Computed category breakdown: counts per category */
+  categoryBreakdown = computed(() => {
+    // Filter all activities by local date range
+    let acts = this.store.activities();
+    const dr = this.dateRange();
+    if (dr) {
+      acts = acts.filter(a => {
+        const d = new Date(a.date);
+        return d >= dr.start && d <= dr.end;
+      });
+    }
+    const total = acts.length;
+    if (total === 0) return { slices: [], total: 0 };
+
+    const slices: { label: string; count: number; perc: number; color: string }[] = [];
+
+    this.store.categories().forEach((cat, i) => {
+      const count = acts.filter(a => a.category_id === cat.id).length;
+      if (count > 0) {
+        slices.push({
+          label: cat.name,
+          count,
+          perc: Math.round((count / total) * 100),
+          color: PALETTE[i % PALETTE.length]
+        });
+      }
+    });
+
+    // "No Category"
+    const catCount = acts.filter(a => !a.category_id).length;
+    if (catCount > 0) {
+      slices.push({
+        label: 'No Category',
+        count: catCount,
+        perc: Math.round((catCount / total) * 100),
+        color: '#94a3b8'
+      });
+    }
+
+    return { slices, total };
+  });
+
   constructor() {
     addIcons({ pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline });
     this.setDateRangePreset('thisMonth'); // default
@@ -105,16 +150,32 @@ export class AnalyticsComponent {
       if (d.slices.length === 0) {
         this.chart?.destroy();
         this.chart = null;
-        return;
+      } else {
+        // Delay to ensure canvas is in the DOM after @if resolves
+        setTimeout(() => {
+          if (this.chart) {
+            this.updateChart(d);
+          } else {
+            this.createChart(d);
+          }
+        }, 50);
       }
-      // Delay to ensure canvas is in the DOM after @if resolves
-      setTimeout(() => {
-        if (this.chart) {
-          this.updateChart(d);
-        } else {
-          this.createChart(d);
-        }
-      }, 50);
+    });
+
+    effect(() => {
+      const c = this.categoryBreakdown();
+      if (c.slices.length === 0) {
+        this.categoryChart?.destroy();
+        this.categoryChart = null;
+      } else {
+        setTimeout(() => {
+          if (this.categoryChart) {
+            this.updateCategoryChart(c);
+          } else {
+            this.createCategoryChart(c);
+          }
+        }, 50);
+      }
     });
   }
 
@@ -218,5 +279,57 @@ export class AnalyticsComponent {
     this.chart.data.datasets[0].data = d.slices.map(s => s.count);
     (this.chart.data.datasets[0] as any).backgroundColor = d.slices.map(s => s.color);
     this.chart.update();
+  }
+
+  createCategoryChart(c: ReturnType<typeof this.categoryBreakdown>) {
+    const ctx = this.categoryCanvas?.nativeElement;
+    if (!ctx) return;
+
+    this.categoryChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: c.slices.map(s => s.label),
+        datasets: [{
+          data: c.slices.map(s => s.count),
+          backgroundColor: c.slices.map(s => s.color),
+          borderColor: '#1e293b',
+          borderWidth: 3,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#cbd5e1',
+              padding: 16,
+              font: { size: 13 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.parsed as number;
+                const total = (ctx.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                const pct = Math.round((val / total) * 100);
+                return ` ${val} activities (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  updateCategoryChart(c: ReturnType<typeof this.categoryBreakdown>) {
+    if (!this.categoryChart) return;
+    this.categoryChart.data.labels = c.slices.map(s => s.label);
+    this.categoryChart.data.datasets[0].data = c.slices.map(s => s.count);
+    (this.categoryChart.data.datasets[0] as any).backgroundColor = c.slices.map(s => s.color);
+    this.categoryChart.update();
   }
 }
