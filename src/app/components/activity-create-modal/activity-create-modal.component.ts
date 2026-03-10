@@ -5,7 +5,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import {
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
     IonList, IonItem, IonLabel, IonInput, IonTextarea, IonSelect, IonSelectOption,
-    IonDatetime, IonDatetimeButton, IonModal, IonIcon, ModalController
+    IonModal, IonIcon, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, cameraOutline, checkmarkOutline } from 'ionicons/icons';
@@ -20,7 +20,7 @@ import { ImageKitService } from '../../services/imagekit.service';
         CommonModule, ReactiveFormsModule,
         IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
         IonList, IonItem, IonLabel, IonInput, IonTextarea, IonSelect, IonSelectOption,
-        IonDatetime, IonDatetimeButton, IonModal, IonIcon
+        IonModal, IonIcon
     ]
 })
 export class ActivityCreateModalComponent implements OnInit {
@@ -47,6 +47,17 @@ export class ActivityCreateModalComponent implements OnInit {
             date: [this.todayDate, Validators.required],
             category_id: ['', Validators.required],
             tag_id: ['']
+        });
+
+        // Reset tag if category changes and tag is no longer valid
+        this.activityForm.get('category_id')?.valueChanges.subscribe(() => {
+            const currentTagId = this.activityForm.get('tag_id')?.value;
+            if (currentTagId) {
+                const isValid = this.availableTags.some(t => t.id === currentTagId);
+                if (!isValid) {
+                    this.activityForm.get('tag_id')?.setValue('');
+                }
+            }
         });
     }
 
@@ -106,7 +117,6 @@ export class ActivityCreateModalComponent implements OnInit {
 
     get availableTags() {
         const catId = this.activityForm.get('category_id')?.value;
-        if (!catId) return [];
-        return this.store.tags().filter(t => t.category_id === catId || !t.category_id);
+        return this.store.tags().filter(t => !t.category_id || t.category_id === catId);
     }
 }

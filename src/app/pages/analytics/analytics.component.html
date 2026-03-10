@@ -3,46 +3,169 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Analytics Dashboard</ion-title>
+    <ion-title>Analytics</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="light">
-  <div class="header-filters ion-padding" style="background:#fff;">
+
+  <!-- Filters: Date Range + Category -->
+  <div class="filter-bar"
+    style="background: #1e293b; padding: 12px 16px; border-bottom: 1px solid rgba(148,163,184,0.1);">
     <ion-grid>
-      <ion-row class="ion-justify-content-center">
-        <ion-col size="12" size-md="6">
-          <ion-select [(ngModel)]="selectedCategoryId" placeholder="Select Category for Breakdown" interface="popover"
-            style="width: 100%">
-            @for (c of store.categories(); track c.id) {
-            <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
-            }
-          </ion-select>
+      <ion-row class="ion-align-items-center">
+
+        <!-- Date Range Popover -->
+        <ion-col size="12" size-md="6" id="analytics-date-trigger">
+          <ion-button fill="outline" expand="block" class="cat-trigger-btn">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            {{ dateLabel }}
+          </ion-button>
+
+          <ion-popover trigger="analytics-date-trigger" triggerAction="click" #datePopover side="bottom"
+            alignment="start" size="cover">
+            <ng-template>
+              <ion-content class="ion-padding" style="--background: #1e293b;">
+                <ion-list lines="none" style="background: transparent;">
+                  <ion-item button (click)="setDateRangePreset('day'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'day'">
+                    <ion-label>Today</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="setDateRangePreset('week'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'week'">
+                    <ion-label>This Week</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="setDateRangePreset('thisMonth'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'thisMonth'">
+                    <ion-label>This Month</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="setDateRangePreset('year'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'year'">
+                    <ion-label>This Year</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="dateRangeMode = 'custom'"
+                    [class.selected-preset]="dateRangeMode === 'custom'">
+                    <ion-label>Custom Range</ion-label>
+                  </ion-item>
+                </ion-list>
+
+                @if (dateRangeMode === 'custom') {
+                <div style="border-top: 1px solid rgba(148,163,184,0.1); padding-top: 15px; margin-top: 8px;">
+                  <ion-item lines="none" style="--background: transparent;">
+                    <ion-label position="stacked"
+                      style="color: #4fd1c5; font-size: 0.7rem; text-transform: uppercase;">From</ion-label>
+                    <input type="date" [(ngModel)]="customStartDate" class="native-date-input"
+                      onclick="this.showPicker()" [max]="customEndDate" />
+                  </ion-item>
+                  <ion-item lines="none" style="--background: transparent;">
+                    <ion-label position="stacked"
+                      style="color: #4fd1c5; font-size: 0.7rem; text-transform: uppercase;">To</ion-label>
+                    <input type="date" [(ngModel)]="customEndDate" class="native-date-input" onclick="this.showPicker()"
+                      [min]="customStartDate" />
+                  </ion-item>
+                  @if (!isDateRangeValid()) {
+                  <div style="color: var(--ion-color-danger); font-size: 0.7rem; padding: 5px 15px;">
+                    "To" date must be after "From".
+                  </div>
+                  }
+                  <ion-button expand="block" (click)="applyCustomRange(); datePopover.dismiss()"
+                    [disabled]="!isDateRangeValid()" color="primary" class="ion-margin-top"
+                    style="--border-radius: 8px;">
+                    Apply Range
+                  </ion-button>
+                </div>
+                }
+              </ion-content>
+            </ng-template>
+          </ion-popover>
         </ion-col>
+
+        <!-- Category Selector Popover -->
+        <ion-col size="12" size-md="6" id="analytics-cat-trigger">
+          <ion-button fill="outline" expand="block" class="cat-trigger-btn">
+            <ion-icon name="albums-outline" slot="start"></ion-icon>
+            {{ selectedCategoryId() ? getCategoryName() : 'Select a Category' }}
+          </ion-button>
+
+          <ion-popover trigger="analytics-cat-trigger" triggerAction="click" #catPopover side="bottom" alignment="start"
+            size="cover">
+            <ng-template>
+              <ion-content class="ion-padding" style="--background: #1e293b;">
+                <ion-list lines="none" style="background: transparent;">
+                  @for (c of store.categories(); track c.id) {
+                  <ion-item button (click)="onCategorySelect(c.id); catPopover.dismiss()"
+                    [class.selected-preset]="selectedCategoryId() === c.id" style="--background: transparent;">
+                    <ion-label>{{ c.name }}</ion-label>
+                    @if (selectedCategoryId() === c.id) {
+                    <ion-icon name="checkmark-circle-outline" slot="end" color="primary"></ion-icon>
+                    }
+                  </ion-item>
+                  }
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-popover>
+        </ion-col>
+
       </ion-row>
     </ion-grid>
   </div>
 
-  @if (selectedCategoryId) {
-  <div class="chart-container" style="position:relative; height:40vh; margin-top:20px; padding: 20px;">
-    <h4 style="text-align:center; color: #333;">{{ getCategoryName() }} Category Breakdown</h4>
-    <canvas #pieCanvas></canvas>
-  </div>
-  } @else {
-  <div style="text-align:center; padding-top: 50px; color:#999;">
-    <ion-icon name="pie-chart-outline" style="font-size: 64px; opacity: 0.5"></ion-icon>
-    <h3>Please select a category to view analytics.</h3>
+  <!-- Empty State: no category selected -->
+  @if (!selectedCategoryId()) {
+  <div class="empty-state">
+    <ion-icon name="pie-chart-outline"></ion-icon>
+    <h3>Select a category</h3>
+    <p>Choose a category above to see its activity breakdown by tag.</p>
   </div>
   }
 
-  @if (selectedCategoryId && chartData().stats.length) {
-  <ion-list style="margin-top:20px;" inset="true">
-    <ion-item *ngFor="let s of chartData().stats">
-      <ion-label>
-        <h2>{{ s.name }}</h2>
-      </ion-label>
-      <span slot="end" style="font-weight: bold; color: var(--ion-color-primary)">{{ s.perc }}%</span>
-    </ion-item>
-  </ion-list>
+  <!-- Empty State: category selected but no activities -->
+  @if (selectedCategoryId() && breakdown().total === 0) {
+  <div class="empty-state">
+    <ion-icon name="pie-chart-outline"></ion-icon>
+    <h3>No activities found</h3>
+    <p>There are no activities logged under <strong>{{ getCategoryName() }}</strong> yet.</p>
+  </div>
   }
+
+  <!-- Chart + Stats -->
+  @if (selectedCategoryId() && breakdown().total > 0) {
+  <div class="analytics-body">
+
+    <!-- Title card -->
+    <ion-card class="title-card">
+      <ion-card-header>
+        <ion-card-title>{{ getCategoryName() }} — Tag Breakdown</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="subtitle">Based on <strong>{{ breakdown().total }}</strong> total activities</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Doughnut Chart -->
+    <div class="chart-wrapper">
+      <canvas #pieCanvas></canvas>
+    </div>
+
+    <!-- Stats legend -->
+    <ion-list inset="true" class="stats-list">
+      @for (s of breakdown().slices; track s.label) {
+      <ion-item>
+        <span class="color-dot" [style.background]="s.color" slot="start"></span>
+        <ion-label>
+          <h2>{{ s.label }}</h2>
+          <p>{{ s.count }} {{ s.count === 1 ? 'activity' : 'activities' }}</p>
+        </ion-label>
+        <ion-badge slot="end" [style.background]="s.color"
+          style="color: #0f172a; font-size: 0.85rem; padding: 4px 10px; border-radius: 20px;">
+          {{ s.perc }}%
+        </ion-badge>
+      </ion-item>
+      }
+    </ion-list>
+
+  </div>
+  }
+
 </ion-content>

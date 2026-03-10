@@ -101,9 +101,9 @@ export class TrackerStore {
         if (acts) this.activities.set(acts);
     }
 
-    async addCategory(name: string) {
+    async addCategory(name: string): Promise<{ success: boolean; error?: string }> {
         const { data: { user } } = await this.supabase.client.auth.getUser();
-        if (!user) return;
+        if (!user) return { success: false, error: 'Not authenticated' };
 
         const { data, error } = await this.supabase.client
             .from('categories')
@@ -113,7 +113,36 @@ export class TrackerStore {
 
         if (data && !error) {
             this.categories.update(c => [...c, data]);
+            return { success: true };
         }
+        return { success: false, error: error?.message || 'Failed to add category' };
+    }
+
+    async updateCategory(id: string, name: string): Promise<{ success: boolean; error?: string }> {
+        const { data, error } = await this.supabase.client
+            .from('categories')
+            .update({ name })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.categories.update(c => c.map(cat => cat.id === id ? data : cat));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to update category' };
+    }
+    async deleteCategory(id: string): Promise<{ success: boolean; error?: string }> {
+        const { error } = await this.supabase.client
+            .from('categories')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            this.categories.update(c => c.filter(cat => cat.id !== id));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to delete category' };
     }
 
     async addTag(name: string, category_id: string | null = null) {
@@ -131,6 +160,20 @@ export class TrackerStore {
         }
     }
 
+    async updateTag(id: string, name: string, category_id: string | null = null): Promise<{ success: boolean; error?: string }> {
+        const { data, error } = await this.supabase.client
+            .from('tags')
+            .update({ name, category_id })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.tags.update(t => t.map(tag => tag.id === id ? data : tag));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to update tag' };
+    }
     async addActivity(payload: Omit<Activity, 'id' | 'user_id' | 'created_at'>) {
         const { data: { user } } = await this.supabase.client.auth.getUser();
         if (!user) return;

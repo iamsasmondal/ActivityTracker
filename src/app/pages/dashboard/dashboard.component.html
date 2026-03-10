@@ -15,43 +15,172 @@
 
 <ion-content color="light">
 
-  <div class="header-filters ion-padding" style="background: #fff; margin-bottom: 10px; border-bottom: 1px solid #eee;">
+  <div class="header-filters ion-padding"
+    style="background: #1e293b; margin-bottom: 10px; border-bottom: 1px solid rgba(148,163,184,0.1);">
     <ion-grid>
+      <!-- Row 1: Date Range + Search -->
       <ion-row class="ion-align-items-center">
-        <!-- Date Segment -->
-        <ion-col size="12" size-md="4">
-          <ion-select [(ngModel)]="dateRangeMode" (ionChange)="setDateRangePreset(dateRangeMode)" interface="popover"
-            placeholder="Date Range">
-            <ion-select-option value="day">Today</ion-select-option>
-            <ion-select-option value="week">This Week</ion-select-option>
-            <ion-select-option value="thisMonth">This Month</ion-select-option>
-            <ion-select-option value="year">This Year</ion-select-option>
-            <ion-select-option value="custom">Custom</ion-select-option>
-          </ion-select>
+        <!-- Date Range Popover -->
+        <ion-col size="12" size-md="6" id="date-range-trigger">
+          <ion-button fill="outline" expand="block" class="date-trigger-btn">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            {{ dateRangeMode === 'custom' ? 'Custom Range' : (dateRangeMode === 'day' ? 'Today' : dateRangeMode ===
+            'week' ? 'This Week' : dateRangeMode === 'thisMonth' ? 'This Month' : 'This Year') }}
+          </ion-button>
+
+          <ion-popover trigger="date-range-trigger" triggerAction="click" #datePopover side="bottom" alignment="start"
+            size="cover">
+            <ng-template>
+              <ion-content class="ion-padding" style="--background: #1e293b;">
+                <ion-list lines="none" style="background: transparent;">
+                  <ion-item button (click)="setDateRangePreset('day'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'day'">
+                    <ion-label>Today</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="setDateRangePreset('week'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'week'">
+                    <ion-label>This Week</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="setDateRangePreset('thisMonth'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'thisMonth'">
+                    <ion-label>This Month</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="setDateRangePreset('year'); datePopover.dismiss()"
+                    [class.selected-preset]="dateRangeMode === 'year'">
+                    <ion-label>This Year</ion-label>
+                  </ion-item>
+                  <ion-item button (click)="dateRangeMode = 'custom'"
+                    [class.selected-preset]="dateRangeMode === 'custom'">
+                    <ion-label>Custom Range</ion-label>
+                  </ion-item>
+                </ion-list>
+
+                @if (dateRangeMode === 'custom') {
+                <div class="custom-range-container ion-margin-top"
+                  style="border-top: 1px solid rgba(148,163,184,0.1); padding-top: 15px;">
+                  <ion-item lines="none" style="--background: transparent;">
+                    <ion-label position="stacked"
+                      style="color: #4fd1c5; font-size: 0.7rem; text-transform: uppercase;">From</ion-label>
+                    <input type="date" [(ngModel)]="customStartDate" class="native-date-input"
+                      onclick="this.showPicker()" [max]="customEndDate" />
+                  </ion-item>
+                  <ion-item lines="none" style="--background: transparent;">
+                    <ion-label position="stacked"
+                      style="color: #4fd1c5; font-size: 0.7rem; text-transform: uppercase;">To</ion-label>
+                    <input type="date" [(ngModel)]="customEndDate" class="native-date-input" onclick="this.showPicker()"
+                      [min]="customStartDate" />
+                  </ion-item>
+
+                  @if (!isDateRangeValid()) {
+                  <div style="color: var(--ion-color-danger); font-size: 0.7rem; padding: 5px 15px;">
+                    "To" date must be after "From".
+                  </div>
+                  }
+
+                  <ion-button expand="block" (click)="onCustomDateChange(); datePopover.dismiss()"
+                    [disabled]="!isDateRangeValid()" color="primary" class="ion-margin-top"
+                    style="--border-radius: 8px;">
+                    Apply Range
+                  </ion-button>
+                </div>
+                }
+              </ion-content>
+            </ng-template>
+          </ion-popover>
         </ion-col>
 
-        <!-- Search -->
-        <ion-col size="12" size-md="4">
+        <!-- Search (always enabled) -->
+        <ion-col size="12" size-md="6">
           <ion-searchbar [ngModel]="store.searchQuery()" (ngModelChange)="store.setSearchQuery($event)"
             placeholder="Search Name or Description"></ion-searchbar>
         </ion-col>
-
-        <!-- Chips Filter -->
-        <ion-col size="12" size-md="4">
-          <ion-select placeholder="Filter Categories" [multiple]="true" [ngModel]="store.selectedCategories()"
-            (ngModelChange)="store.selectedCategories.set($event)">
-            @for (c of store.categories(); track c.id) {
-            <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
-            }
-          </ion-select>
-        </ion-col>
       </ion-row>
+
+      <!-- Row 2: Category + Tag Filters -->
+      <ion-row class="ion-align-items-center" style="border-top: 1px solid rgba(148,163,184,0.08); padding-top: 4px;">
+
+        <!-- Category Filter Popover -->
+        <ion-col size="12" size-md="6" id="category-filter-trigger"
+          [style.opacity]="store.categories().length === 0 ? '0.5' : '1'">
+          <ion-button fill="outline" expand="block" class="date-trigger-btn"
+            [disabled]="store.categories().length === 0">
+            <ion-icon name="albums-outline" slot="start"></ion-icon>
+            {{ store.selectedCategories().length === 0 ? 'Filter by Category' : store.selectedCategories().length + '
+            Category Selected' }}
+          </ion-button>
+
+          <ion-popover trigger="category-filter-trigger" triggerAction="click" #categoryPopover side="bottom"
+            alignment="start" size="cover">
+            <ng-template>
+              <ion-content class="ion-padding" style="--background: #1e293b;">
+                <ion-list lines="none" style="background: transparent;">
+                  @for (c of store.categories(); track c.id) {
+                  <ion-item button (click)="store.toggleCategoryFilter(c.id)"
+                    [class.selected-preset]="store.selectedCategories().includes(c.id)"
+                    style="--background: transparent;">
+                    <ion-checkbox slot="start" [checked]="store.selectedCategories().includes(c.id)"
+                      (ionChange)="store.toggleCategoryFilter(c.id)" style="pointer-events: none;">
+                    </ion-checkbox>
+                    <ion-label>{{ c.name }}</ion-label>
+                  </ion-item>
+                  }
+                </ion-list>
+                @if (store.selectedCategories().length > 0) {
+                <ion-button expand="block" fill="clear" color="danger" class="ion-margin-top"
+                  (click)="store.selectedCategories.set([]); categoryPopover.dismiss()"
+                  style="--border-radius: 8px; font-size: 0.85rem;">
+                  Clear Selection
+                </ion-button>
+                }
+              </ion-content>
+            </ng-template>
+          </ion-popover>
+        </ion-col>
+
+        <!-- Tag Filter Popover -->
+        <ion-col size="12" size-md="6" id="tag-filter-trigger"
+          [style.opacity]="store.tags().length === 0 ? '0.5' : '1'">
+          <ion-button fill="outline" expand="block" class="date-trigger-btn" [disabled]="store.tags().length === 0">
+            <ion-icon name="pricetags-outline" slot="start"></ion-icon>
+            {{ store.selectedTags().length === 0 ? 'Filter by Tags' : store.selectedTags().length + ' Tag Selected' }}
+          </ion-button>
+
+          <ion-popover trigger="tag-filter-trigger" triggerAction="click" #tagPopover side="bottom" alignment="start"
+            size="cover">
+            <ng-template>
+              <ion-content class="ion-padding" style="--background: #1e293b;">
+                <ion-list lines="none" style="background: transparent;">
+                  @for (t of store.tags(); track t.id) {
+                  <ion-item button (click)="store.toggleTagFilter(t.id)"
+                    [class.selected-preset]="store.selectedTags().includes(t.id)" style="--background: transparent;">
+                    <ion-checkbox slot="start" [checked]="store.selectedTags().includes(t.id)"
+                      (ionChange)="store.toggleTagFilter(t.id)" style="pointer-events: none;">
+                    </ion-checkbox>
+                    <ion-label>{{ t.name }} <span style="color:#94a3b8; font-size:0.8em;">— {{
+                        getCategoryName(t.category_id ?? '') }}</span></ion-label>
+                  </ion-item>
+                  }
+                </ion-list>
+                @if (store.selectedTags().length > 0) {
+                <ion-button expand="block" fill="clear" color="danger" class="ion-margin-top"
+                  (click)="store.selectedTags.set([]); tagPopover.dismiss()"
+                  style="--border-radius: 8px; font-size: 0.85rem;">
+                  Clear Selection
+                </ion-button>
+                }
+              </ion-content>
+            </ng-template>
+          </ion-popover>
+        </ion-col>
+
+      </ion-row>
+
     </ion-grid>
   </div>
 
   @if (store.filteredActivities().length === 0) {
-  <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #666;">
-    <ion-icon name="document-text-outline" style="font-size: 64px; color: #ccc; margin-bottom: 16px;"></ion-icon>
+  <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #64748b;">
+    <ion-icon name="document-text-outline" style="font-size: 64px; color: #334155; margin-bottom: 16px;"></ion-icon>
     <h3>No Activities Found</h3>
     <p>Try adjusting your filters or start tracking your activities.</p>
   </div>
@@ -61,7 +190,7 @@
     @for (act of store.filteredActivities(); track act.id) {
     <ion-item>
       <ion-avatar slot="start"
-        style="background:#00a887; display:flex; align-items:center; justify-content:center; color:#fff">
+        style="background:#4fd1c5; display:flex; align-items:center; justify-content:center; color:#0f172a">
         <ion-icon [name]="act.image_id ? 'image-outline' : 'pricetag-outline'" style="font-size:24px"></ion-icon>
       </ion-avatar>
       <ion-label>
@@ -69,8 +198,8 @@
         <p>{{ act.description }}</p>
         <div style="margin-top: 5px;">
           <ion-badge color="medium">{{ act.date }}</ion-badge>
-          <ion-chip color="primary" *ngIf="act.category_id">{{ getCategoryName(act.category_id) }}</ion-chip>
           <ion-chip color="tertiary" *ngIf="act.tag_id">{{ getTagName(act.tag_id) }}</ion-chip>
+          <ion-chip color="primary" *ngIf="act.category_id">{{ getCategoryName(act.category_id) }}</ion-chip>
         </div>
       </ion-label>
     </ion-item>

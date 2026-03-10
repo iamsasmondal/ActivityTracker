@@ -24,15 +24,9 @@
             </ion-item>
 
             <ion-item>
-                <ion-label>Date</ion-label>
-                <ion-datetime-button datetime="datetime"></ion-datetime-button>
-                <ion-modal [keepContentsMounted]="true">
-                    <ng-template>
-                        <!-- max attribute ensures past dates only -->
-                        <ion-datetime id="datetime" formControlName="date" presentation="date"
-                            [max]="todayDate"></ion-datetime>
-                    </ng-template>
-                </ion-modal>
+                <ion-label position="stacked">Date</ion-label>
+                <input type="date" formControlName="date" [max]="todayDate.split('T')[0]" class="native-date-input"
+                    onclick="this.showPicker()" />
             </ion-item>
 
             <ion-item>

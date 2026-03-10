@@ -6,10 +6,10 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
   IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
   IonSearchbar, IonSelect, IonSelectOption, IonButton, IonIcon, IonItem, IonLabel,
-  IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime, IonFab, IonFabButton, ModalController
+  IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime, IonFab, IonFabButton, ModalController, IonPopover, IonCheckbox
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, addOutline } from 'ionicons/icons';
+import { downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline } from 'ionicons/icons';
 import { TrackerStore } from '../../store/tracker.store';
 import { ActivityCreateModalComponent } from '../../components/activity-create-modal/activity-create-modal.component';
 
@@ -24,7 +24,7 @@ import { ActivityCreateModalComponent } from '../../components/activity-create-m
     IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
     IonSearchbar, IonSelect, IonSelectOption, IonButton, IonIcon, IonItem, IonLabel,
     IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime,
-    IonFab, IonFabButton
+    IonFab, IonFabButton, IonPopover, IonCheckbox
   ]
 })
 export class DashboardComponent {
@@ -32,9 +32,12 @@ export class DashboardComponent {
   modalCtrl = inject(ModalController);
 
   dateRangeMode = 'thisMonth';
+  customStartDate = new Date().toISOString().split('T')[0];
+  customEndDate = new Date().toISOString().split('T')[0];
+
 
   constructor() {
-    addIcons({ downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, addOutline });
+    addIcons({ downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline });
     this.setDateRangePreset('thisMonth');
   }
 
@@ -67,8 +70,27 @@ export class DashboardComponent {
 
     if (mode !== 'custom') {
       this.store.setDateRange(start, now);
+      // Reset custom inputs to today for next time
+      this.customStartDate = start.toISOString().split('T')[0];
+      this.customEndDate = now.toISOString().split('T')[0];
+    } else {
+      // Don't auto-apply for custom mode anymore, require Apply button
     }
   }
+
+  onCustomDateChange() {
+    if (!this.isDateRangeValid()) return;
+
+    const start = new Date(this.customStartDate);
+    const end = new Date(this.customEndDate);
+    end.setHours(23, 59, 59, 999);
+    this.store.setDateRange(start, end);
+  }
+
+  isDateRangeValid(): boolean {
+    return this.customStartDate <= this.customEndDate;
+  }
+
 
   async exportCsv() {
     const activities = this.store.filteredActivities();
@@ -102,7 +124,7 @@ export class DashboardComponent {
   }
 
   getCategoryName(id: string) {
-    return this.store.categories().find(c => c.id === id)?.name || 'Unknown Category';
+    return this.store.categories().find(c => c.id === id)?.name || 'All Categories';
   }
 
   getTagName(id: string | undefined) {

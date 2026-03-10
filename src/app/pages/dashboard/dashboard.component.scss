@@ -1,0 +1,98 @@
+.date-trigger-btn {
+    --border-color: rgba(148, 163, 184, 0.2);
+    --color: #e2e8f0;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    height: 44px;
+    margin: 0;
+    width: 100%;
+    text-transform: none;
+    font-weight: 500;
+}
+
+
+.selected-preset {
+    --background: rgba(79, 209, 197, 0.1);
+    --color: #4fd1c5;
+
+    ion-label {
+        font-weight: 600;
+        color: #4fd1c5 !important;
+    }
+}
+
+ion-item {
+    --padding-start: 16px;
+    --min-height: 48px;
+    margin: 4px 8px;
+    border-radius: 8px;
+    --background: transparent;
+
+    ion-label {
+        color: #e2e8f0;
+        font-size: 0.95rem;
+    }
+}
+
+/* Ensure the popover matches the trigger button width on desktop */
+ion-popover {
+    --width: trigger;
+    --background: #1e293b;
+    --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    --border-radius: 12px;
+
+    &::part(content) {
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-sizing: border-box;
+    }
+
+
+    ion-content {
+        --background: #1e293b;
+        --padding-top: 0;
+        --padding-bottom: 0;
+        --padding-start: 0;
+        --padding-end: 0;
+    }
+}
+
+.custom-range-container {
+    padding: 0 4px 12px 4px;
+
+    ion-item {
+        margin: 2px 0;
+        --padding-start: 12px;
+        --background: transparent;
+        border-radius: 4px;
+
+        ion-label {
+            font-size: 0.75rem !important;
+            margin-bottom: 4px;
+            color: #4fd1c5 !important;
+        }
+    }
+}
+
+/* Updated items inside list to be more compact and fill width */
+ion-list {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    width: 100%;
+
+    ion-item {
+        margin: 0;
+        /* Reset margins key for full width */
+        width: 100%;
+        --min-height: 48px;
+        --background: transparent;
+        --border-radius: 0;
+        /* Align with popover edges */
+
+        &.selected-preset {
+            --background: rgba(79, 209, 197, 0.1);
+            --color: #4fd1c5;
+        }
+    }
+}

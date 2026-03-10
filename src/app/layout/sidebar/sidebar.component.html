@@ -1,11 +1,11 @@
-<ion-menu contentId="main-content" type="overlay">
+<ion-menu contentId="main-content">
   <ion-header>
     <ion-toolbar color="primary">
       <ion-title>Activity Tracker</ion-title>
     </ion-toolbar>
   </ion-header>
   <ion-content>
-    <ion-list id="inbox-list">
+    <ion-list id="inbox-list" lines="none">
       @for (p of appPages; track p.title) {
       <ion-menu-toggle auto-hide="false">
         <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
@@ -16,4 +16,12 @@
       }
     </ion-list>
   </ion-content>
+  <ion-footer class="ion-no-border">
+    <ion-toolbar>
+      <ion-button expand="full" fill="clear" color="danger" (click)="logout()">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        Logout
+      </ion-button>
+    </ion-toolbar>
+  </ion-footer>
 </ion-menu>

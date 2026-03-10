@@ -1,14 +1,23 @@
-import { Component, ElementRef, ViewChild, computed, effect, inject, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
-  IonGrid, IonRow, IonCol, IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonIcon
+  IonGrid, IonRow, IonCol, IonButton, IonIcon, IonItem, IonLabel, IonList,
+  IonPopover, IonCheckbox, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline } from 'ionicons/icons';
 import { TrackerStore } from '../../store/tracker.store';
 
 Chart.register(...registerables);
+
+// Palette for slices
+const PALETTE = [
+  '#4fd1c5', '#63b3ed', '#f6ad55', '#fc8181', '#b794f4',
+  '#68d391', '#f687b3', '#76e4f7', '#faf089', '#a0aec0'
+];
 
 @Component({
   selector: 'app-analytics',
@@ -18,117 +27,196 @@ Chart.register(...registerables);
   imports: [
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
-    IonGrid, IonRow, IonCol, IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonIcon
+    IonGrid, IonRow, IonCol, IonButton, IonIcon, IonItem, IonLabel, IonList,
+    IonPopover, IonCheckbox, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
   ]
 })
-export class AnalyticsComponent implements AfterViewInit {
+export class AnalyticsComponent {
   store = inject(TrackerStore);
 
-  selectedCategoryId = '';
+  selectedCategoryId = signal('');
+
+  // --- Local date range (independent from dashboard) ---
+  dateRangeMode = 'thisMonth';
+  customStartDate = new Date().toISOString().split('T')[0];
+  customEndDate = new Date().toISOString().split('T')[0];
+  dateRange = signal<{ start: Date; end: Date } | null>(null);
 
   @ViewChild('pieCanvas') pieCanvas!: ElementRef<HTMLCanvasElement>;
   chart: Chart | null = null;
 
-  chartData = computed(() => {
-    // Only looking at globally filtered activities
-    const act = this.store.filteredActivities();
-    const catId = this.selectedCategoryId;
+  /** Computed breakdown: counts per tag + "No Tag" for the selected category */
+  breakdown = computed(() => {
+    const catId = this.selectedCategoryId();
+    if (!catId) return { slices: [], total: 0 };
 
-    if (!catId || act.length === 0) return { labels: [], data: [], stats: [], totalDays: 0 };
-
-    const dr = this.store.dateRange();
-    let totalDays = 30;
+    // Filter all activities by category AND local date range
+    let acts = this.store.activities().filter(a => a.category_id === catId);
+    const dr = this.dateRange();
     if (dr) {
-      const diffTime = Math.abs(dr.end.getTime() - dr.start.getTime());
-      totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      acts = acts.filter(a => {
+        const d = new Date(a.date);
+        return d >= dr.start && d <= dr.end;
+      });
     }
+    const total = acts.length;
+    if (total === 0) return { slices: [], total: 0 };
 
-    const catActs = act.filter(a => a.category_id === catId);
-    const tagCounts: Record<string, number> = {};
-    let daysWithTags = 0;
+    // Tags that belong to this category + common tags (category_id = null)
+    const categoryTags = this.store.tags().filter(t => t.category_id === catId);
+    const commonTags = this.store.tags().filter(t => t.category_id === null);
+    const allRelevantTags = [...categoryTags, ...commonTags];
 
-    catActs.forEach(a => {
-      if (a.tag_id) {
-        tagCounts[a.tag_id] = (tagCounts[a.tag_id] || 0) + 1;
-        daysWithTags++;
+    const slices: { label: string; count: number; perc: number; color: string }[] = [];
+
+    allRelevantTags.forEach((tag, i) => {
+      const count = acts.filter(a => a.tag_id === tag.id).length;
+      if (count > 0) {
+        slices.push({
+          label: tag.name + (tag.category_id === null ? ' (Common)' : ''),
+          count,
+          perc: Math.round((count / total) * 100),
+          color: PALETTE[i % PALETTE.length]
+        });
       }
     });
 
-    const otherDays = Math.max(0, totalDays - daysWithTags);
-    const labels = [];
-    const data = [];
-    const stats = [];
-
-    for (const [tId, count] of Object.entries(tagCounts)) {
-      const tagName = this.store.tags().find(t => t.id === tId)?.name || 'Unknown';
-      labels.push(tagName);
-      data.push(count);
-      stats.push({ name: tagName, perc: Math.round((count / totalDays) * 100) });
+    // "No Tag" slice — only activities with no tag_id at all
+    const knownTagIds = new Set(allRelevantTags.map(t => t.id));
+    const noTagCount = acts.filter(a => !a.tag_id || !knownTagIds.has(a.tag_id)).length;
+    if (noTagCount > 0) {
+      slices.push({
+        label: 'No Tag',
+        count: noTagCount,
+        perc: Math.round((noTagCount / total) * 100),
+        color: '#94a3b8'
+      });
     }
 
-    if (otherDays > 0) {
-      labels.push('Other Days');
-      data.push(otherDays);
-      stats.push({ name: 'Other Days', perc: Math.round((otherDays / totalDays) * 100) });
-    }
-
-    return { labels, data, stats, totalDays };
+    return { slices, total };
   });
 
   constructor() {
+    addIcons({ pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline });
+    this.setDateRangePreset('thisMonth'); // default
+
     effect(() => {
-      const d = this.chartData();
-      // Only update if chart exists and canvas is available
-      if (this.chart) {
-        this.updateChart(d.labels, d.data);
-      } else if (d.labels.length > 0) {
-        // Create dynamically if not exists but we have data
-        setTimeout(() => this.createChart(), 100);
+      const d = this.breakdown();
+      if (d.slices.length === 0) {
+        this.chart?.destroy();
+        this.chart = null;
+        return;
       }
+      // Delay to ensure canvas is in the DOM after @if resolves
+      setTimeout(() => {
+        if (this.chart) {
+          this.updateChart(d);
+        } else {
+          this.createChart(d);
+        }
+      }, 50);
     });
   }
 
-  ngAfterViewInit() {
-    // Intentionally left for component setup, chart initializes in effect
+  onCategorySelect(id: string) {
+    this.selectedCategoryId.set(id);
+    this.chart?.destroy();
+    this.chart = null;
   }
 
-  createChart() {
-    if (this.chart) this.chart.destroy();
+  setDateRangePreset(mode: string) {
+    this.dateRangeMode = mode;
+    const now = new Date();
+    let start = new Date();
+    start.setHours(0, 0, 0, 0);
+    if (mode === 'week') {
+      start.setDate(now.getDate() - 7);
+    } else if (mode === 'thisMonth') {
+      start.setDate(1);
+    } else if (mode === 'year') {
+      start.setMonth(0, 1);
+    }
+    if (mode !== 'custom') {
+      this.dateRange.set({ start, end: now });
+      this.customStartDate = start.toISOString().split('T')[0];
+      this.customEndDate = now.toISOString().split('T')[0];
+    }
+  }
 
+  applyCustomRange() {
+    if (!this.isDateRangeValid()) return;
+    const start = new Date(this.customStartDate);
+    const end = new Date(this.customEndDate);
+    end.setHours(23, 59, 59, 999);
+    this.dateRange.set({ start, end });
+  }
+
+  isDateRangeValid(): boolean {
+    return this.customStartDate <= this.customEndDate;
+  }
+
+  get dateLabel(): string {
+    const m = this.dateRangeMode;
+    if (m === 'custom') return 'Custom Range';
+    if (m === 'day') return 'Today';
+    if (m === 'week') return 'This Week';
+    if (m === 'year') return 'This Year';
+    return 'This Month';
+  }
+
+  getCategoryName() {
+    return this.store.categories().find(c => c.id === this.selectedCategoryId())?.name || '';
+  }
+
+  createChart(d: ReturnType<typeof this.breakdown>) {
     const ctx = this.pieCanvas?.nativeElement;
     if (!ctx) return;
 
-    const d = this.chartData();
-
     this.chart = new Chart(ctx, {
-      type: 'pie',
+      type: 'doughnut',
       data: {
-        labels: d.labels,
+        labels: d.slices.map(s => s.label),
         datasets: [{
-          data: d.data,
-          backgroundColor: ['#00a887', '#1ab193', '#007e65', '#42d77d', '#cccccc'],
-          borderWidth: 1
+          data: d.slices.map(s => s.count),
+          backgroundColor: d.slices.map(s => s.color),
+          borderColor: '#1e293b',
+          borderWidth: 3,
+          hoverOffset: 8
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '60%',
         plugins: {
-          legend: { position: 'bottom' }
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#cbd5e1',
+              padding: 16,
+              font: { size: 13 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.parsed as number;
+                const total = (ctx.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                const pct = Math.round((val / total) * 100);
+                return ` ${val} activities (${pct}%)`;
+              }
+            }
+          }
         }
       }
     });
   }
 
-  updateChart(labels: string[], data: number[]) {
-    if (this.chart) {
-      this.chart.data.labels = labels;
-      this.chart.data.datasets[0].data = data;
-      this.chart.update();
-    }
-  }
-
-  getCategoryName() {
-    return this.store.categories().find(c => c.id === this.selectedCategoryId)?.name || 'Category';
+  updateChart(d: ReturnType<typeof this.breakdown>) {
+    if (!this.chart) return;
+    this.chart.data.labels = d.slices.map(s => s.label);
+    this.chart.data.datasets[0].data = d.slices.map(s => s.count);
+    (this.chart.data.datasets[0] as any).backgroundColor = d.slices.map(s => s.color);
+    this.chart.update();
   }
 }

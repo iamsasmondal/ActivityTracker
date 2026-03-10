@@ -47,7 +47,48 @@
         <h2>{{ t.name }}</h2>
         <p>Assigned to: <ion-badge color="medium">{{ getCategoryName(t.category_id) }}</ion-badge></p>
       </ion-label>
+      <ion-button slot="end" fill="clear" color="medium" (click)="openEditModal(t)">
+        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+      </ion-button>
     </ion-item>
     }
   </ion-list>
+
+  <ion-modal [isOpen]="isEditModalOpen" (didDismiss)="closeEditModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Edit Tag</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeEditModal()">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" color="light">
+        <ion-item lines="none" style="margin-bottom: 10px; --background: transparent;">
+          <ion-input [(ngModel)]="editTagName" label="Tag Name" labelPlacement="stacked"></ion-input>
+        </ion-item>
+        <ion-item lines="none" style="--background: transparent;">
+          <ion-select [(ngModel)]="editTagCategoryId" label="Category" labelPlacement="stacked" interface="popover"
+            style="width: 100%" [disabled]="isCategoryDisabled">
+            <ion-select-option [value]="null">Common (All Categories)</ion-select-option>
+            @for (c of store.categories(); track c.id) {
+            <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (isCategoryDisabled) {
+        <div style="font-size: 0.8rem; color: var(--ion-color-medium); padding: 0 16px;">
+          Category cannot be changed because this tag is currently used by one or more activities.
+        </div>
+        }
+        <div class="ion-padding-top">
+          <ion-button expand="block" (click)="saveEditTag()" [disabled]="!editTagName.trim()">
+            Save Changes
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
 </ion-content>

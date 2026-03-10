@@ -16,24 +16,27 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent)
   },
   {
-    path: 'dashboard',
-    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'analytics',
-    loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'categories',
-    loadComponent: () => import('./pages/categories/categories.component').then(m => m.CategoriesComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'tags',
-    loadComponent: () => import('./pages/tags/tags.component').then(m => m.TagsComponent),
-    canActivate: [authGuard]
+    path: '',
+    loadComponent: () => import('./layout/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'analytics',
+        loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent)
+      },
+      {
+        path: 'categories',
+        loadComponent: () => import('./pages/categories/categories.component').then(m => m.CategoriesComponent)
+      },
+      {
+        path: 'tags',
+        loadComponent: () => import('./pages/tags/tags.component').then(m => m.TagsComponent)
+      }
+    ]
   },
   {
     path: '**',
