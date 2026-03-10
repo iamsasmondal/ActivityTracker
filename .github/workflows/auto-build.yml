@@ -1,0 +1,39 @@
+name: Build & Push Artifacts (No Deploy)
+
+on:
+  push:
+    branches: [ dev, test, stage, main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.1 # Matches your local environment
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      # Use npx to ensure the Ionic CLI is used even if not installed globally on the runner
+      - name: 🛠 Build Ionic ActivityTracker
+        run: npx ionic build --prod
+
+      - name: 📍 Set Target Branch
+        run: echo "TARGET_BRANCH=${{ github.ref_name }}-build" >> $GITHUB_ENV
+
+      - name: 💾 Publish Artifacts to Build Branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: ${{ env.TARGET_BRANCH }}
+          FOLDER: www # Matches your local build output
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
