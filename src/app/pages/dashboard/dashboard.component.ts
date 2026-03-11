@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
-  IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-  IonSearchbar, IonSelect, IonSelectOption, IonButton, IonIcon, IonItem, IonLabel,
-  IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime, IonFab, IonFabButton, ModalController, IonPopover, IonCheckbox, AlertController, IonItemSliding, IonItemOptions, IonItemOption
+  IonGrid, IonRow, IonCol,
+  IonSearchbar, IonButton, IonIcon, IonItem, IonLabel,
+  IonList, IonAvatar, IonChip, IonBadge, IonFab, IonFabButton, ModalController, IonPopover, IonCheckbox, AlertController, IonItemSliding, IonItemOptions, IonItemOption
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline, pencilOutline, trashOutline } from 'ionicons/icons';
@@ -22,9 +22,9 @@ import { ActivityCreateModalComponent } from '../../components/activity-create-m
   imports: [
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
-    IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonSearchbar, IonSelect, IonSelectOption, IonButton, IonIcon, IonItem, IonLabel,
-    IonList, IonAvatar, IonChip, IonBadge, IonDatetimeButton, IonModal, IonDatetime,
+    IonGrid, IonRow, IonCol,
+    IonSearchbar, IonButton, IonIcon, IonItem, IonLabel,
+    IonList, IonAvatar, IonChip, IonBadge,
     IonFab, IonFabButton, IonPopover, IonCheckbox, IonItemSliding, IonItemOptions, IonItemOption
   ]
 })

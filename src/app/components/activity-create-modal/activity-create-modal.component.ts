@@ -5,7 +5,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import {
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
     IonList, IonItem, IonLabel, IonInput, IonTextarea, IonSelect, IonSelectOption,
-    IonModal, IonIcon, ModalController
+    IonIcon, ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, cameraOutline, checkmarkOutline } from 'ionicons/icons';
@@ -20,7 +20,7 @@ import { ImageKitService } from '../../services/imagekit.service';
         CommonModule, ReactiveFormsModule,
         IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
         IonList, IonItem, IonLabel, IonInput, IonTextarea, IonSelect, IonSelectOption,
-        IonModal, IonIcon
+        IonIcon
     ]
 })
 export class ActivityCreateModalComponent implements OnInit {

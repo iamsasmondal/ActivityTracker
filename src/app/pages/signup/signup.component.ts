@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-  IonItem, IonLabel, IonInput, IonButton, IonText, IonIcon
+  IonContent, IonCard, IonCardContent,
+  IonItem, IonInput, IonButton, IonText, IonIcon
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { personAddOutline, mailOutline, lockClosedOutline } from 'ionicons/icons';
@@ -17,8 +17,8 @@ import { SupabaseService } from '../../services/supabase.service';
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent,
-    IonItem, IonLabel, IonInput, IonButton, IonText, IonIcon
+    IonContent, IonCard, IonCardContent,
+    IonItem, IonInput, IonButton, IonText, IonIcon
   ]
 })
 export class SignupComponent {

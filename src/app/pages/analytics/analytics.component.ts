@@ -5,7 +5,7 @@ import { Chart, registerables } from 'chart.js';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
   IonGrid, IonRow, IonCol, IonButton, IonIcon, IonItem, IonLabel, IonList,
-  IonPopover, IonCheckbox, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
+  IonPopover, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline } from 'ionicons/icons';
@@ -28,7 +28,7 @@ const PALETTE = [
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton,
     IonGrid, IonRow, IonCol, IonButton, IonIcon, IonItem, IonLabel, IonList,
-    IonPopover, IonCheckbox, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
+    IonPopover, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
   ]
 })
 export class AnalyticsComponent {
