@@ -64,6 +64,9 @@ export class TrackerStore {
             act = act.filter(a => !!a.image_id);
         }
 
+        // Sort by date descending (latest first)
+        act.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
         return act;
     });
 

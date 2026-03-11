@@ -184,6 +184,11 @@
     <h3>No Activities Found</h3>
     <p>Try adjusting your filters or start tracking your activities.</p>
   </div>
+  } @else {
+  <div class="ion-padding-horizontal"
+    style="padding-top: 10px; padding-bottom: 5px; color: #94a3b8; font-size: 0.9rem; font-weight: 500;">
+    Showing {{ store.filteredActivities().length }} activities
+  </div>
   }
 
   <ion-list inset="true">

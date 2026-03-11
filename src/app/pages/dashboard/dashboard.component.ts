@@ -33,14 +33,14 @@ export class DashboardComponent {
   modalCtrl = inject(ModalController);
   alertCtrl = inject(AlertController);
 
-  dateRangeMode = 'thisMonth';
+  dateRangeMode = 'year';
   customStartDate = new Date().toISOString().split('T')[0];
   customEndDate = new Date().toISOString().split('T')[0];
 
 
   constructor() {
     addIcons({ downloadOutline, imageOutline, documentTextOutline, searchOutline, pricetagOutline, pricetagsOutline, addOutline, calendarOutline, albumsOutline, pencilOutline, trashOutline });
-    this.setDateRangePreset('thisMonth');
+    this.setDateRangePreset('year');
   }
 
   async openCreateModal(activity?: Activity) {

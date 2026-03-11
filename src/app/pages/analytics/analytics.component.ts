@@ -37,7 +37,7 @@ export class AnalyticsComponent {
   selectedCategoryId = signal('');
 
   // --- Local date range (independent from dashboard) ---
-  dateRangeMode = 'thisMonth';
+  dateRangeMode = 'year';
   customStartDate = new Date().toISOString().split('T')[0];
   customEndDate = new Date().toISOString().split('T')[0];
   dateRange = signal<{ start: Date; end: Date } | null>(null);
@@ -143,7 +143,7 @@ export class AnalyticsComponent {
 
   constructor() {
     addIcons({ pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline });
-    this.setDateRangePreset('thisMonth'); // default
+    this.setDateRangePreset('year'); // default
 
     effect(() => {
       const d = this.breakdown();
@@ -221,8 +221,8 @@ export class AnalyticsComponent {
     if (m === 'custom') return 'Custom Range';
     if (m === 'day') return 'Today';
     if (m === 'week') return 'This Week';
-    if (m === 'year') return 'This Year';
-    return 'This Month';
+    if (m === 'thisMonth') return 'This Month';
+    return 'This Year';
   }
 
   getCategoryName() {
