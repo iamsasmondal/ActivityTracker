@@ -55,12 +55,24 @@ create table if not exists public.habits (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Foods table
+create table if not exists public.foods (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  name text not null,
+  description text,
+  date date not null check (date <= CURRENT_DATE),
+  category text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- RLS Policies
 alter table public.profiles enable row level security;
 alter table public.categories enable row level security;
 alter table public.tags enable row level security;
 alter table public.activities enable row level security;
 alter table public.habits enable row level security;
+alter table public.foods enable row level security;
 
 -- Profiles Policies
 create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
@@ -89,6 +101,12 @@ create policy "Users can view own habits" on habits for select using (auth.uid()
 create policy "Users can insert own habits" on habits for insert with check (auth.uid() = user_id);
 create policy "Users can update own habits" on habits for update using (auth.uid() = user_id);
 create policy "Users can delete own habits" on habits for delete using (auth.uid() = user_id);
+
+-- Foods Policies
+create policy "Users can view own foods" on foods for select using (auth.uid() = user_id);
+create policy "Users can insert own foods" on foods for insert with check (auth.uid() = user_id);
+create policy "Users can update own foods" on foods for update using (auth.uid() = user_id);
+create policy "Users can delete own foods" on foods for delete using (auth.uid() = user_id);
 
 -- Function for profile creation on user signup
 create or replace function public.handle_new_user()

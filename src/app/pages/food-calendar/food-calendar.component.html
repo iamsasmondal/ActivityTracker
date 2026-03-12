@@ -1,0 +1,68 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Food Calendar</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+    @if (store.foods().length === 0) {
+    <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #64748b;">
+        <ion-icon name="restaurant-outline" style="font-size: 64px; color: #334155; margin-bottom: 16px;"></ion-icon>
+        <h3>No Food Entries</h3>
+        <p>Start tracking your meals by tapping the button below.</p>
+    </div>
+    } @else {
+    <div class="ion-padding-horizontal"
+        style="padding-top: 10px; padding-bottom: 5px; color: #94a3b8; font-size: 0.9rem; font-weight: 500;">
+        Showing {{ store.foods().length }} entries
+    </div>
+    }
+
+    <ion-list inset="true">
+        @for (food of store.foods(); track food.id) {
+        <ion-item-sliding>
+            <ion-item>
+                <ion-avatar slot="start"
+                    style="background:#f6ad55; display:flex; align-items:center; justify-content:center; color:#0f172a">
+                    <ion-icon [name]="getIconForCategory(food.category)" style="font-size:24px"></ion-icon>
+                </ion-avatar>
+                <ion-label>
+                    <h2>{{ food.name }}</h2>
+                    <p>{{ food.description }}</p>
+                    <div style="margin-top: 5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <ion-badge color="medium" style="margin: 0;">{{ food.date }}</ion-badge>
+                        <ion-badge color="secondary" style="margin: 0;">{{ food.category }}</ion-badge>
+                    </div>
+                </ion-label>
+
+                <ion-button slot="end" fill="clear" color="medium" (click)="openCreateModal(food)">
+                    <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+                </ion-button>
+                <ion-button slot="end" fill="clear" color="danger" (click)="deleteFood(food.id)">
+                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+            </ion-item>
+
+            <ion-item-options side="end">
+                <ion-item-option color="medium" (click)="openCreateModal(food)">
+                    <ion-icon slot="start" name="pencil-outline"></ion-icon>
+                    Edit
+                </ion-item-option>
+                <ion-item-option color="danger" (click)="deleteFood(food.id)">
+                    <ion-icon slot="start" name="trash-outline"></ion-icon>
+                    Delete
+                </ion-item-option>
+            </ion-item-options>
+        </ion-item-sliding>
+        }
+    </ion-list>
+
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button (click)="openCreateModal()">
+            <ion-icon name="add-outline"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
+</ion-content>

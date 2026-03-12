@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { Profile, Category, Tag, Activity, Habit } from '../models/schema.models';
+import { Profile, Category, Tag, Activity, Habit, Food } from '../models/schema.models';
 import { SupabaseService } from '../services/supabase.service';
 
 @Injectable({
@@ -12,6 +12,7 @@ export class TrackerStore {
     public tags = signal<Tag[]>([]);
     public activities = signal<Activity[]>([]);
     public habits = signal<Habit[]>([]);
+    public foods = signal<Food[]>([]);
 
     private _dataLoaded = false;
 
@@ -123,6 +124,22 @@ export class TrackerStore {
             }
         } catch (e) {
             console.warn('Failed to load habits:', e);
+        }
+
+        // Load foods
+        try {
+            const { data: fds, error: fdsError } = await this.supabase.client
+                .from('foods')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('date', { ascending: false });
+            if (fdsError) {
+                console.warn('Foods table not available yet:', fdsError.message);
+            } else if (fds) {
+                this.foods.set(fds);
+            }
+        } catch (e) {
+            console.warn('Failed to load foods:', e);
         }
     }
 
@@ -298,6 +315,49 @@ export class TrackerStore {
             return { success: true };
         }
         return { success: false, error: error?.message || 'Failed to delete habit' };
+    }
+
+    async addFood(payload: Omit<Food, 'id' | 'user_id' | 'created_at'>) {
+        const { data: { user } } = await this.supabase.client.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await this.supabase.client
+            .from('foods')
+            .insert({ user_id: user.id, ...payload })
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.foods.update(f => [data, ...f]);
+        }
+    }
+
+    async updateFood(id: string, payload: Partial<Food>) {
+        const { data, error } = await this.supabase.client
+            .from('foods')
+            .update(payload)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.foods.update(fds => fds.map(f => f.id === id ? data : f));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to update food' };
+    }
+
+    async deleteFood(id: string) {
+        const { error } = await this.supabase.client
+            .from('foods')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            this.foods.update(fds => fds.filter(f => f.id !== id));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to delete food' };
     }
 
     // Set Filters

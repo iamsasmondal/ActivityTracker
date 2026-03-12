@@ -1,0 +1,49 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-title>{{ foodId ? 'Edit Food Entry' : 'Add Food Entry' }}</ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="dismiss()">
+                <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+    <form [formGroup]="foodForm" (ngSubmit)="saveFood()" class="ion-padding">
+        <ion-list inset="true">
+
+            <ion-item>
+                <ion-input label="Name" labelPlacement="stacked" formControlName="name"
+                    placeholder="e.g. Scrambled Eggs"></ion-input>
+            </ion-item>
+
+            <ion-item>
+                <ion-textarea label="Description" labelPlacement="stacked" formControlName="description"
+                    placeholder="Notes..."></ion-textarea>
+            </ion-item>
+
+            <ion-item>
+                <ion-label position="stacked">Date</ion-label>
+                <input type="date" formControlName="date" [max]="todayDate" class="native-date-input"
+                    onclick="this.showPicker()" />
+            </ion-item>
+
+            <ion-item>
+                <ion-select label="Category" labelPlacement="stacked" formControlName="category" interface="popover">
+                    @for (cat of categories; track cat) {
+                    <ion-select-option [value]="cat">{{ cat }}</ion-select-option>
+                    }
+                </ion-select>
+            </ion-item>
+
+        </ion-list>
+
+        <div class="ion-margin-top">
+            <ion-button expand="block" type="submit" [disabled]="foodForm.invalid || isSaving">
+                <ion-icon slot="start" name="checkmark-outline" *ngIf="!isSaving"></ion-icon>
+                {{ isSaving ? 'Saving...' : (foodId ? 'Update Food' : 'Save Food') }}
+            </ion-button>
+        </div>
+    </form>
+</ion-content>
