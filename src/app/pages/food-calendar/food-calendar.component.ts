@@ -66,13 +66,18 @@ export class FoodCalendarComponent {
         await alert.present();
     }
 
-    getIconForCategory(category: string) {
-        switch (category.toLowerCase()) {
-            case 'breakfast': return 'restaurant-outline';
-            case 'lunch': return 'restaurant-outline';
-            case 'dinner': return 'restaurant-outline';
-            case 'snacks': return 'fast-food-outline';
-            default: return 'restaurant-outline';
+    getCategoryName(id: string) {
+        return this.store.foodCategories().find(c => c.id === id)?.name || 'Unknown';
+    }
+
+    getIconForCategory(categoryId: string) {
+        const categoryName = this.getCategoryName(categoryId).toLowerCase();
+        if (categoryName.includes('breakfast') || categoryName.includes('lunch') || categoryName.includes('dinner')) {
+            return 'restaurant-outline';
         }
+        if (categoryName.includes('snack') || categoryName.includes('fast food')) {
+            return 'fast-food-outline';
+        }
+        return 'restaurant-outline';
     }
 }

@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Food Categories</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-card style="margin-top: 20px;">
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-input [(ngModel)]="newCategoryName" placeholder="New Food Category Name" [disabled]="isAdding()"></ion-input>
+        <ion-button slot="end" (click)="addCategory()" [disabled]="!newCategoryName.trim() || isAdding()">
+          @if (isAdding()) {
+          <ion-spinner name="crescent" style="margin-right: 8px;"></ion-spinner>
+          Adding...
+          } @else {
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          Add
+          }
+        </ion-button>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  @if (store.foodCategories().length === 0) {
+  <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #64748b;">
+    <ion-icon name="restaurant-outline" style="font-size: 64px; color: #334155; margin-bottom: 16px;"></ion-icon>
+    <h3 style="color: #94a3b8;">No Food Categories Yet</h3>
+    <p>Create a food category above to start organizing your meals.</p>
+  </div>
+  }
+
+  <div class="ion-padding-horizontal" style="margin-top: 16px;">
+    <ion-note color="medium" style="display: block; font-size: 0.85rem; text-align: center;">
+      <ion-icon name="information-circle-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
+      Food categories can only be deleted if they have no entries in the food calendar.
+    </ion-note>
+  </div>
+
+  <ion-list inset="true">
+    @for (c of store.foodCategories(); track c.id) {
+    <ion-item-sliding>
+      <ion-item>
+        <ion-icon name="restaurant-outline" slot="start" color="primary"></ion-icon>
+        <ion-label>
+          <h2>{{ c.name }}</h2>
+        </ion-label>
+        <ion-button slot="end" fill="clear" color="medium" (click)="editCategory(c.id, c.name)">
+          <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+        </ion-button>
+        @if (!isInUse(c.id)) {
+        <ion-button slot="end" fill="clear" color="danger" (click)="deleteCategory(c.id)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+        }
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="medium" (click)="editCategory(c.id, c.name)">
+          <ion-icon slot="start" name="pencil-outline"></ion-icon>
+          Edit
+        </ion-item-option>
+        @if (!isInUse(c.id)) {
+        <ion-item-option color="danger" (click)="deleteCategory(c.id)">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Delete
+        </ion-item-option>
+        }
+      </ion-item-options>
+    </ion-item-sliding>
+    }
+  </ion-list>
+</ion-content>

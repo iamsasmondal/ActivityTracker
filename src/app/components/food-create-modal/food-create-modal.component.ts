@@ -33,8 +33,6 @@ export class FoodCreateModalComponent implements OnInit {
     todayDate: string;
     isSaving = false;
 
-    categories = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Other'];
-
     constructor() {
         addIcons({ closeOutline, checkmarkOutline });
         this.todayDate = new Date().toISOString().split('T')[0];
@@ -45,7 +43,7 @@ export class FoodCreateModalComponent implements OnInit {
             name: [this.existingData?.name || '', Validators.required],
             description: [this.existingData?.description || ''],
             date: [this.existingData?.date || this.todayDate, Validators.required],
-            category: [this.existingData?.category || 'Breakfast', Validators.required]
+            food_category_id: [this.existingData?.food_category_id || '', Validators.required]
         });
     }
 
@@ -62,7 +60,7 @@ export class FoodCreateModalComponent implements OnInit {
             name: rawForm.name,
             description: rawForm.description,
             date: rawForm.date,
-            category: rawForm.category
+            food_category_id: rawForm.food_category_id
         };
 
         if (this.foodId) {

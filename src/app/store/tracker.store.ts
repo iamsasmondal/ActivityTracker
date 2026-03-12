@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { Profile, Category, Tag, Activity, Habit, Food } from '../models/schema.models';
+import { Profile, Category, Tag, Activity, Habit, Food, FoodCategory } from '../models/schema.models';
 import { SupabaseService } from '../services/supabase.service';
 
 @Injectable({
@@ -13,6 +13,7 @@ export class TrackerStore {
     public activities = signal<Activity[]>([]);
     public habits = signal<Habit[]>([]);
     public foods = signal<Food[]>([]);
+    public foodCategories = signal<FoodCategory[]>([]);
 
     private _dataLoaded = false;
 
@@ -125,6 +126,13 @@ export class TrackerStore {
         } catch (e) {
             console.warn('Failed to load habits:', e);
         }
+
+        // Load food categories
+        const { data: foodCats } = await this.supabase.client
+            .from('food_categories')
+            .select('*')
+            .eq('user_id', user.id);
+        if (foodCats) this.foodCategories.set(foodCats);
 
         // Load foods
         try {
@@ -358,6 +366,52 @@ export class TrackerStore {
             return { success: true };
         }
         return { success: false, error: error?.message || 'Failed to delete food' };
+    }
+
+    // Food Category Actions
+    async addFoodCategory(name: string): Promise<{ success: boolean; error?: string }> {
+        const { data: { user } } = await this.supabase.client.auth.getUser();
+        if (!user) return { success: false, error: 'Not authenticated' };
+
+        const { data, error } = await this.supabase.client
+            .from('food_categories')
+            .insert({ user_id: user.id, name })
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.foodCategories.update(c => [...c, data]);
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to add food category' };
+    }
+
+    async updateFoodCategory(id: string, name: string): Promise<{ success: boolean; error?: string }> {
+        const { data, error } = await this.supabase.client
+            .from('food_categories')
+            .update({ name })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (data && !error) {
+            this.foodCategories.update(c => c.map(cat => cat.id === id ? data : cat));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to update food category' };
+    }
+
+    async deleteFoodCategory(id: string): Promise<{ success: boolean; error?: string }> {
+        const { error } = await this.supabase.client
+            .from('food_categories')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            this.foodCategories.update(c => c.filter(cat => cat.id !== id));
+            return { success: true };
+        }
+        return { success: false, error: error?.message || 'Failed to delete food category' };
     }
 
     // Set Filters

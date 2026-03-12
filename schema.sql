@@ -55,6 +55,15 @@ create table if not exists public.habits (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Food Categories table
+create table if not exists public.food_categories (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  name text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  UNIQUE(user_id, name)
+);
+
 -- Foods table
 create table if not exists public.foods (
   id uuid default uuid_generate_v4() primary key,
@@ -62,7 +71,7 @@ create table if not exists public.foods (
   name text not null,
   description text,
   date date not null check (date <= CURRENT_DATE),
-  category text not null,
+  food_category_id uuid references public.food_categories(id) on delete restrict not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -73,6 +82,7 @@ alter table public.tags enable row level security;
 alter table public.activities enable row level security;
 alter table public.habits enable row level security;
 alter table public.foods enable row level security;
+alter table public.food_categories enable row level security;
 
 -- Profiles Policies
 create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
@@ -101,6 +111,12 @@ create policy "Users can view own habits" on habits for select using (auth.uid()
 create policy "Users can insert own habits" on habits for insert with check (auth.uid() = user_id);
 create policy "Users can update own habits" on habits for update using (auth.uid() = user_id);
 create policy "Users can delete own habits" on habits for delete using (auth.uid() = user_id);
+
+-- Food Categories Policies
+create policy "Users can view own food_categories" on food_categories for select using (auth.uid() = user_id);
+create policy "Users can insert own food_categories" on food_categories for insert with check (auth.uid() = user_id);
+create policy "Users can update own food_categories" on food_categories for update using (auth.uid() = user_id);
+create policy "Users can delete own food_categories" on food_categories for delete using (auth.uid() = user_id);
 
 -- Foods Policies
 create policy "Users can view own foods" on foods for select using (auth.uid() = user_id);

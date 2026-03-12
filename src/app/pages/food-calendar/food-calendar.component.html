@@ -27,14 +27,14 @@
             <ion-item>
                 <ion-avatar slot="start"
                     style="background:#f6ad55; display:flex; align-items:center; justify-content:center; color:#0f172a">
-                    <ion-icon [name]="getIconForCategory(food.category)" style="font-size:24px"></ion-icon>
+                    <ion-icon [name]="getIconForCategory(food.food_category_id)" style="font-size:24px"></ion-icon>
                 </ion-avatar>
                 <ion-label>
                     <h2>{{ food.name }}</h2>
                     <p>{{ food.description }}</p>
                     <div style="margin-top: 5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <ion-badge color="medium" style="margin: 0;">{{ food.date }}</ion-badge>
-                        <ion-badge color="secondary" style="margin: 0;">{{ food.category }}</ion-badge>
+                        <ion-badge color="secondary" style="margin: 0;">{{ getCategoryName(food.food_category_id) }}</ion-badge>
                     </div>
                 </ion-label>
 

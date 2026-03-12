@@ -30,9 +30,9 @@
             </ion-item>
 
             <ion-item>
-                <ion-select label="Category" labelPlacement="stacked" formControlName="category" interface="popover">
-                    @for (cat of categories; track cat) {
-                    <ion-select-option [value]="cat">{{ cat }}</ion-select-option>
+                <ion-select label="Food Category" labelPlacement="stacked" formControlName="food_category_id" interface="popover">
+                    @for (cat of store.foodCategories(); track cat.id) {
+                    <ion-select-option [value]="cat.id">{{ cat.name }}</ion-select-option>
                     }
                 </ion-select>
             </ion-item>

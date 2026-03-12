@@ -43,6 +43,10 @@ export const routes: Routes = [
       {
         path: 'food-calendar',
         loadComponent: () => import('./pages/food-calendar/food-calendar.component').then(m => m.FoodCalendarComponent)
+      },
+      {
+        path: 'food-categories',
+        loadComponent: () => import('./pages/food-categories/food-categories.component').then(m => m.FoodCategoriesComponent)
       }
     ]
   },
