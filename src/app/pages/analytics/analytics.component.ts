@@ -8,7 +8,7 @@ import {
   IonPopover, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardTitle
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline } from 'ionicons/icons';
+import { pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline, restaurantOutline } from 'ionicons/icons';
 import { TrackerStore } from '../../store/tracker.store';
 
 Chart.register(...registerables);
@@ -47,6 +47,9 @@ export class AnalyticsComponent {
 
   @ViewChild('categoryCanvas') categoryCanvas!: ElementRef<HTMLCanvasElement>;
   categoryChart: Chart | null = null;
+
+  @ViewChild('foodCanvas') foodCanvas!: ElementRef<HTMLCanvasElement>;
+  foodChart: Chart | null = null;
 
   /** Computed breakdown: counts per tag + "No Tag" for the selected category */
   breakdown = computed(() => {
@@ -141,8 +144,38 @@ export class AnalyticsComponent {
     return { slices, total };
   });
 
+  /** Computed food breakdown: counts per food category */
+  foodBreakdown = computed(() => {
+    let fds = this.store.foods();
+    const dr = this.dateRange();
+    if (dr) {
+      fds = fds.filter(f => {
+        const d = new Date(f.date);
+        return d >= dr.start && d <= dr.end;
+      });
+    }
+    const total = fds.length;
+    if (total === 0) return { slices: [], total: 0 };
+
+    const slices: { label: string; count: number; perc: number; color: string }[] = [];
+
+    this.store.foodCategories().forEach((cat, i) => {
+      const count = fds.filter(f => f.food_category_id === cat.id).length;
+      if (count > 0) {
+        slices.push({
+          label: cat.name,
+          count,
+          perc: Math.round((count / total) * 100),
+          color: PALETTE[i % PALETTE.length]
+        });
+      }
+    });
+
+    return { slices, total };
+  });
+
   constructor() {
-    addIcons({ pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline });
+    addIcons({ pieChartOutline, albumsOutline, checkmarkCircleOutline, calendarOutline, restaurantOutline });
     this.setDateRangePreset('year'); // default
 
     effect(() => {
@@ -173,6 +206,22 @@ export class AnalyticsComponent {
             this.updateCategoryChart(c);
           } else {
             this.createCategoryChart(c);
+          }
+        }, 50);
+      }
+    });
+
+    effect(() => {
+      const f = this.foodBreakdown();
+      if (f.slices.length === 0) {
+        this.foodChart?.destroy();
+        this.foodChart = null;
+      } else {
+        setTimeout(() => {
+          if (this.foodChart) {
+            this.updateFoodChart(f);
+          } else {
+            this.createFoodChart(f);
           }
         }, 50);
       }
@@ -331,5 +380,57 @@ export class AnalyticsComponent {
     this.categoryChart.data.datasets[0].data = c.slices.map(s => s.count);
     (this.categoryChart.data.datasets[0] as any).backgroundColor = c.slices.map(s => s.color);
     this.categoryChart.update();
+  }
+
+  createFoodChart(f: ReturnType<typeof this.foodBreakdown>) {
+    const ctx = this.foodCanvas?.nativeElement;
+    if (!ctx) return;
+
+    this.foodChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: f.slices.map((s: any) => s.label),
+        datasets: [{
+          data: f.slices.map((s: any) => s.count),
+          backgroundColor: f.slices.map((s: any) => s.color),
+          borderColor: '#1e293b',
+          borderWidth: 3,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#cbd5e1',
+              padding: 16,
+              font: { size: 13 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.parsed as number;
+                const total = (ctx.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                const pct = Math.round((val / total) * 100);
+                return ` ${val} entries (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  updateFoodChart(f: ReturnType<typeof this.foodBreakdown>) {
+    if (!this.foodChart) return;
+    this.foodChart.data.labels = f.slices.map((s: any) => s.label);
+    this.foodChart.data.datasets[0].data = f.slices.map((s: any) => s.count);
+    (this.foodChart.data.datasets[0] as any).backgroundColor = f.slices.map((s: any) => s.color);
+    this.foodChart.update();
   }
 }

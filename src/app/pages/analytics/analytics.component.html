@@ -201,6 +201,49 @@
         </ion-col>
 
       </ion-row>
+
+      <ion-row>
+        <!-- THIRD GRAPH CARD (Food Category Breakdown) -->
+        <ion-col size="12" size-md="6">
+          <ion-card class="title-card" style="height: 100%; display: flex; flex-direction: column;">
+            <ion-card-header>
+              <ion-card-title>Food: Category breakdown</ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content style="flex: 1;">
+              @if (foodBreakdown().total === 0) {
+              <div class="empty-state" style="padding: 20px;">
+                <ion-icon name="restaurant-outline"></ion-icon>
+                <p>No food entries logged yet.</p>
+              </div>
+              } @else {
+              <p class="subtitle" style="margin-bottom: 15px;">Based on <strong>{{ foodBreakdown().total }}</strong> total
+                entries</p>
+
+              <div class="chart-wrapper">
+                <canvas #foodCanvas></canvas>
+              </div>
+
+              <ion-list inset="true" class="stats-list">
+                @for (f of foodBreakdown().slices; track f.label) {
+                <ion-item>
+                  <span class="color-dot" [style.background]="f.color" slot="start"></span>
+                  <ion-label>
+                    <h2>{{ f.label }}</h2>
+                    <p>{{ f.count }} {{ f.count === 1 ? 'entry' : 'entries' }}</p>
+                  </ion-label>
+                  <ion-badge slot="end" [style.background]="f.color"
+                    style="color: #0f172a; font-size: 0.85rem; padding: 4px 10px; border-radius: 20px;">
+                    {{ f.perc }}%
+                  </ion-badge>
+                </ion-item>
+                }
+              </ion-list>
+              }
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
     </ion-grid>
   </div>
 

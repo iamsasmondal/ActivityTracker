@@ -6,7 +6,7 @@ import {
   IonFooter, IonButton
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { gridOutline, pieChartOutline, folderOutline, pricetagOutline, logOutOutline, refreshOutline, restaurantOutline } from 'ionicons/icons';
+import { gridOutline, pieChartOutline, folderOutline, pricetagOutline, logOutOutline, refreshOutline, restaurantOutline, fastFoodOutline } from 'ionicons/icons';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
@@ -30,14 +30,14 @@ export class SidebarComponent {
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
     { title: 'Habits', url: '/habits', icon: 'refresh' },
     { title: 'Food Calendar', url: '/food-calendar', icon: 'restaurant' },
-    { title: 'Food Categories', url: '/food-categories', icon: 'restaurant' },
+    { title: 'Food Categories', url: '/food-categories', icon: 'fast-food' },
     { title: 'Analytics', url: '/analytics', icon: 'pie-chart' },
     { title: 'Categories', url: '/categories', icon: 'folder' },
     { title: 'Tags', url: '/tags', icon: 'pricetag' },
   ];
 
   constructor() {
-    addIcons({ gridOutline, pieChartOutline, folderOutline, pricetagOutline, logOutOutline, refreshOutline, restaurantOutline });
+    addIcons({ gridOutline, pieChartOutline, folderOutline, pricetagOutline, logOutOutline, refreshOutline, restaurantOutline, fastFoodOutline });
   }
 
   async logout() {
